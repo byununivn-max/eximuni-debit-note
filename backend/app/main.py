@@ -1,0 +1,43 @@
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from app.core.config import settings
+from app.api.health import router as health_router
+from app.api.auth import router as auth_router
+from app.api.clients import router as clients_router
+from app.api.shipments import router as shipments_router
+from app.api.debit_notes import router as debit_notes_router
+from app.api.exchange_rates import router as exchange_rates_router
+from app.api.fees import router as fees_router
+from app.api.excel_export import router as excel_export_router
+
+app = FastAPI(
+    title=settings.APP_NAME,
+    description="EXIMUNI Debit Note 자동 생성 시스템 API",
+    version="1.0.0",
+    debug=settings.DEBUG,
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://localhost:3001"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+    expose_headers=["Content-Disposition"],
+)
+
+# API Routers
+app.include_router(health_router, prefix="/api", tags=["health"])
+app.include_router(auth_router)
+app.include_router(clients_router)
+app.include_router(shipments_router)
+app.include_router(debit_notes_router)
+app.include_router(exchange_rates_router)
+app.include_router(fees_router)
+app.include_router(excel_export_router)
+
+
+@app.get("/")
+async def root():
+    return {"message": f"{settings.APP_NAME} API is running"}
