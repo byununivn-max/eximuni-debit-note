@@ -291,7 +291,7 @@ async def approve_debit_note(
     debit_note_id: int,
     body: WorkflowAction = WorkflowAction(),
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_role("admin", "accountant")),
+    current_user: User = Depends(require_role("admin", "accountant", "pic")),
 ):
     """승인 (PENDING_REVIEW → APPROVED) - 생성자 ≠ 승인자 (이중 승인)"""
     result = await db.execute(
@@ -332,7 +332,7 @@ async def reject_debit_note(
     debit_note_id: int,
     body: WorkflowAction,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_role("admin", "accountant")),
+    current_user: User = Depends(require_role("admin", "accountant", "pic")),
 ):
     """거절 (PENDING_REVIEW → REJECTED)"""
     result = await db.execute(
