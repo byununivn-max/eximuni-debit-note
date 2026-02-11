@@ -33,6 +33,8 @@ import MonthlyCostSummaryPage from './pages/MonthlyCostSummaryPage';
 import PnLDashboardPage from './pages/PnLDashboardPage';
 import ProfitabilityPage from './pages/ProfitabilityPage';
 import ShipmentProfitPage from './pages/ShipmentProfitPage';
+import QuotationComparisonPage from './pages/QuotationComparisonPage';
+import FinancialReportsPage from './pages/FinancialReportsPage';
 
 // MSAL 인스턴스 (조건부 생성)
 const msalInstance = msalEnabled ? new PublicClientApplication(msalConfig) : null;
@@ -73,6 +75,8 @@ const AppRoutes: React.FC = () => {
         <Route path="pnl-dashboard" element={<PnLDashboardPage />} />
         <Route path="customer-profitability" element={<ProfitabilityPage />} />
         <Route path="shipment-profit" element={<ShipmentProfitPage />} />
+        <Route path="quotation-comparison" element={<QuotationComparisonPage />} />
+        <Route path="financial-reports" element={<FinancialReportsPage />} />
         <Route path="audit-logs" element={<AuditLogsPage />} />
       </Route>
     </Routes>

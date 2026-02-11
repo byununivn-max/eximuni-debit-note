@@ -27,6 +27,8 @@ from app.api.account_balances import router as acc_balance_router
 from app.api.cost_classifications import router as cost_router
 from app.api.pnl import router as pnl_router
 from app.api.profitability import router as profit_router
+from app.api.quotation_comparison import router as quotation_router
+from app.api.financial_reports import router as fin_report_router
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -71,6 +73,8 @@ app.include_router(acc_balance_router)
 app.include_router(cost_router)
 app.include_router(pnl_router)
 app.include_router(profit_router)
+app.include_router(quotation_router)
+app.include_router(fin_report_router)
 
 
 @app.get("/")

@@ -26,6 +26,8 @@ import {
   AppstoreOutlined,
   BarChartOutlined,
   TrophyOutlined,
+  SwapOutlined,
+  SolutionOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -84,6 +86,8 @@ const AppLayout: React.FC = () => {
     { key: '/pnl-dashboard', icon: <FundOutlined />, label: 'P&L 손익' },
     { key: '/customer-profitability', icon: <TrophyOutlined />, label: '고객 수익성' },
     { key: '/shipment-profit', icon: <ContainerOutlined />, label: '건별 수익성' },
+    { key: '/quotation-comparison', icon: <SwapOutlined />, label: '견적-실적' },
+    { key: '/financial-reports', icon: <SolutionOutlined />, label: '재무제표' },
     { key: '/exchange-rates', icon: <DollarOutlined />, label: '환율 관리' },
     { key: '/audit-logs', icon: <HistoryOutlined />, label: '감사 이력' },
   ];
