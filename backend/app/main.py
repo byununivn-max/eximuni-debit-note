@@ -21,6 +21,9 @@ from app.api.dashboard import router as dashboard_router
 from app.api.chart_of_accounts import router as coa_router
 from app.api.fiscal_periods import router as fiscal_router
 from app.api.journal_entries import router as journal_router
+from app.api.accounting_vendors import router as acc_vendor_router
+from app.api.accounting_customers import router as acc_customer_router
+from app.api.account_balances import router as acc_balance_router
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -59,6 +62,9 @@ app.include_router(dashboard_router)
 app.include_router(coa_router)
 app.include_router(fiscal_router)
 app.include_router(journal_router)
+app.include_router(acc_vendor_router)
+app.include_router(acc_customer_router)
+app.include_router(acc_balance_router)
 
 
 @app.get("/")

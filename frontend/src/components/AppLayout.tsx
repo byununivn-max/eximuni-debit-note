@@ -21,6 +21,8 @@ import {
   BookOutlined,
   DatabaseOutlined,
   HistoryOutlined,
+  CalculatorOutlined,
+  UserSwitchOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -71,6 +73,9 @@ const AppLayout: React.FC = () => {
     { key: '/fiscal-periods', icon: <CalendarOutlined />, label: '회계기간' },
     { key: '/journal-entries', icon: <BookOutlined />, label: '분개전표' },
     { key: '/smartbooks-import', icon: <DatabaseOutlined />, label: 'SB 임포트' },
+    { key: '/accounting-vendors', icon: <ShopOutlined />, label: 'AP 공급사' },
+    { key: '/accounting-customers', icon: <UserSwitchOutlined />, label: 'AR 고객' },
+    { key: '/trial-balance', icon: <CalculatorOutlined />, label: '시산표' },
     { key: '/exchange-rates', icon: <DollarOutlined />, label: '환율 관리' },
     { key: '/audit-logs', icon: <HistoryOutlined />, label: '감사 이력' },
   ];

@@ -25,6 +25,9 @@ import ChartOfAccountsPage from './pages/ChartOfAccountsPage';
 import FiscalPeriodsPage from './pages/FiscalPeriodsPage';
 import JournalEntriesPage from './pages/JournalEntriesPage';
 import SmartBooksImportPage from './pages/SmartBooksImportPage';
+import AccountingVendorsPage from './pages/AccountingVendorsPage';
+import AccountingCustomersPage from './pages/AccountingCustomersPage';
+import TrialBalancePage from './pages/TrialBalancePage';
 
 // MSAL 인스턴스 (조건부 생성)
 const msalInstance = msalEnabled ? new PublicClientApplication(msalConfig) : null;
@@ -57,6 +60,9 @@ const AppRoutes: React.FC = () => {
         <Route path="fiscal-periods" element={<FiscalPeriodsPage />} />
         <Route path="journal-entries" element={<JournalEntriesPage />} />
         <Route path="smartbooks-import" element={<SmartBooksImportPage />} />
+        <Route path="accounting-vendors" element={<AccountingVendorsPage />} />
+        <Route path="accounting-customers" element={<AccountingCustomersPage />} />
+        <Route path="trial-balance" element={<TrialBalancePage />} />
         <Route path="audit-logs" element={<AuditLogsPage />} />
       </Route>
     </Routes>
