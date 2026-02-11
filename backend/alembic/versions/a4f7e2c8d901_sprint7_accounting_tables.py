@@ -68,7 +68,7 @@ def upgrade() -> None:
         sa.Column('closed_by', sa.Integer(), nullable=True),
         sa.Column('created_at', sa.DateTime(), nullable=False),
         sa.Column('updated_at', sa.DateTime(), nullable=False),
-        sa.ForeignKeyConstraint(['closed_by'], ['users.id']),
+        sa.ForeignKeyConstraint(['closed_by'], ['users.user_id']),
         sa.PrimaryKeyConstraint('period_id'),
     )
     op.create_index(

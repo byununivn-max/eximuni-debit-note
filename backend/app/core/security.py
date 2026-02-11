@@ -184,7 +184,7 @@ async def get_current_user(
                 )
             return user
         except HTTPException:
-            raise
+            pass  # MSAL 실패 시 JWT 폴백
         except Exception:
             pass  # MSAL 실패 시 JWT 폴백
 

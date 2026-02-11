@@ -55,8 +55,8 @@ def upgrade() -> None:
         sa.Column('created_at', sa.DateTime(), nullable=False),
         sa.Column('updated_at', sa.DateTime(), nullable=False),
         sa.ForeignKeyConstraint(['cost_center_id'], ['erp_cost_centers.center_id']),
-        sa.ForeignKeyConstraint(['created_by'], ['users.id']),
-        sa.ForeignKeyConstraint(['posted_by'], ['users.id']),
+        sa.ForeignKeyConstraint(['created_by'], ['users.user_id']),
+        sa.ForeignKeyConstraint(['posted_by'], ['users.user_id']),
         sa.PrimaryKeyConstraint('entry_id'),
         sa.UniqueConstraint('entry_number'),
     )
