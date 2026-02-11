@@ -1,23 +1,33 @@
-"""MSSQL T_Client 테이블 모델"""
-from datetime import datetime
-from sqlalchemy import Column, Integer, String, Boolean, DateTime
+"""MSSQL clients 테이블 모델"""
+from sqlalchemy import Column, Integer, String, Boolean, Date, Text
 from app.core.database import MSSQLBase
 
 
 class MssqlClient(MSSQLBase):
-    """고객사 테이블 (MSSQL UNI_DebitNote.dbo.T_Client)"""
-    __tablename__ = "T_Client"
+    """고객사 테이블 (MSSQL UNI_DebitNote.dbo.clients)"""
+    __tablename__ = "clients"
     __table_args__ = {"schema": "dbo"}
 
-    client_id = Column("ClientID", Integer, primary_key=True, autoincrement=True)
-    client_code = Column("ClientCode", String(50), unique=True, nullable=False)
-    client_name = Column("ClientName", String(200), nullable=False)
-    client_name_en = Column("ClientNameEN", String(200))
-    country = Column("Country", String(100))
-    address = Column("Address", String(500))
-    contact_person = Column("ContactPerson", String(100))
-    contact_email = Column("ContactEmail", String(200))
-    contact_phone = Column("ContactPhone", String(50))
-    is_active = Column("IsActive", Boolean, default=True)
-    created_date = Column("CreatedDate", DateTime, default=datetime.utcnow)
-    updated_date = Column("UpdatedDate", DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    id_clients = Column(Integer, primary_key=True, autoincrement=True)
+    id_sharepoint = Column(Integer, nullable=True)
+    gender = Column(String(255), nullable=True)
+    email = Column(String(255), nullable=True)
+    first_name = Column(String(255), nullable=True)
+    last_name = Column(String(255), nullable=True)
+    phone_number = Column(String(255), nullable=True)
+    company_name = Column(String(255), nullable=True)
+    clients_type = Column(String(255), nullable=True)
+    language = Column(String(255), nullable=True)
+    note = Column(Text, nullable=True)
+    service = Column(Text, nullable=True)
+    subscribe = Column(Boolean, nullable=True)
+    active = Column(Boolean, nullable=True)
+    position = Column(Text, nullable=True)
+    industry = Column(String(255), nullable=True)
+    fdi = Column(String(255), nullable=True)
+    province = Column(String(255), nullable=True)
+    key_contact = Column(Boolean, nullable=True)
+    campaign = Column(String(255), nullable=True)
+    unsubcribe_reason = Column(String(255), nullable=True)
+    date_unsubcribe = Column(Date, nullable=True)
+    date_subcribe = Column(Date, nullable=True)

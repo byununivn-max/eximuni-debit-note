@@ -1,11 +1,11 @@
 """MSSQL 레거시 데이터 조회 API
 
 MSSQL UNI_DebitNote 데이터베이스의 기존 운영 데이터 조회:
-- 고객사 목록/상세 (T_Client)
-- 통관 내역 (T_Clearance)
-- 선적 내역 (T_Shipment)
+- 고객사 목록/상세 (clients)
+- 통관 스킴 목록 (scheme_clearance)
+- 통관 비용 상세 (clearance)
 """
-from datetime import datetime, date
+from datetime import date
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select, func, or_, and_
@@ -14,13 +14,13 @@ from sqlalchemy.orm import Session
 from app.core.database import get_mssql_db
 from app.core.security import get_current_user
 from app.models.user import User
-from app.models.mssql import MssqlClient, MssqlClearance, MssqlShipment
+from app.models.mssql import MssqlClient, MssqlClearance, MssqlSchemeClearance
 from app.schemas.mssql import (
     MssqlClientResponse,
     MssqlClientDetailResponse,
+    MssqlSchemeClearanceResponse,
     MssqlClearanceResponse,
     MssqlClearanceDetailResponse,
-    MssqlShipmentResponse,
     PaginatedResponse,
 )
 
@@ -28,13 +28,13 @@ router = APIRouter(prefix="/api/v1/mssql", tags=["mssql-legacy"])
 
 
 # ============================================================
-# Client Endpoints
+# Client Endpoints (clients 테이블)
 # ============================================================
 @router.get("/clients", response_model=PaginatedResponse[MssqlClientResponse])
 def list_clients(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=200),
-    search: Optional[str] = Query(None, description="고객명 또는 코드 검색"),
+    search: Optional[str] = Query(None, description="고객명 또는 이메일 검색"),
     active_only: bool = Query(True, description="활성 고객만 조회"),
     db: Session = Depends(get_mssql_db),
     current_user: User = Depends(get_current_user),
@@ -43,33 +43,30 @@ def list_clients(
     try:
         query = select(MssqlClient)
 
-        # 활성 고객 필터
         if active_only:
-            query = query.where(MssqlClient.is_active == True)
+            query = query.where(MssqlClient.active == True)
 
-        # 검색 필터
         if search:
             search_filter = or_(
-                MssqlClient.client_name.ilike(f"%{search}%"),
-                MssqlClient.client_code.ilike(f"%{search}%"),
-                MssqlClient.client_name_en.ilike(f"%{search}%"),
+                MssqlClient.company_name.ilike(f"%{search}%"),
+                MssqlClient.email.ilike(f"%{search}%"),
+                MssqlClient.first_name.ilike(f"%{search}%"),
+                MssqlClient.last_name.ilike(f"%{search}%"),
             )
             query = query.where(search_filter)
 
-        # 전체 개수
-        total = db.execute(select(func.count()).select_from(query.subquery())).scalar()
+        total = db.execute(
+            select(func.count()).select_from(query.subquery())
+        ).scalar()
 
-        # 페이지네이션
-        query = query.order_by(MssqlClient.client_name).offset(skip).limit(limit)
-        result = db.execute(query)
-        clients = result.scalars().all()
+        query = query.order_by(MssqlClient.company_name).offset(skip).limit(limit)
+        clients = db.execute(query).scalars().all()
 
         return PaginatedResponse(
             total=total,
             items=[MssqlClientResponse.model_validate(c) for c in clients]
         )
     except RuntimeError as e:
-        # MSSQL 연결 설정 없음
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail=str(e)
@@ -82,11 +79,10 @@ def get_client_detail(
     db: Session = Depends(get_mssql_db),
     current_user: User = Depends(get_current_user),
 ):
-    """고객사 상세 조회 (최근 통관 내역 5건 포함)"""
+    """고객사 상세 조회"""
     try:
-        # 고객 정보
         client = db.execute(
-            select(MssqlClient).where(MssqlClient.client_id == client_id)
+            select(MssqlClient).where(MssqlClient.id_clients == client_id)
         ).scalar_one_or_none()
 
         if not client:
@@ -95,21 +91,7 @@ def get_client_detail(
                 detail=f"Client {client_id} not found"
             )
 
-        # 최근 통관 내역 5건
-        clearances = db.execute(
-            select(MssqlClearance)
-            .where(MssqlClearance.client_id == client_id)
-            .order_by(MssqlClearance.created_date.desc())
-            .limit(5)
-        ).scalars().all()
-
-        # 응답 생성
-        response = MssqlClientDetailResponse.model_validate(client)
-        response.recent_clearances = [
-            MssqlClearanceResponse.model_validate(c) for c in clearances
-        ]
-
-        return response
+        return MssqlClientDetailResponse.model_validate(client)
     except RuntimeError as e:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -118,48 +100,60 @@ def get_client_detail(
 
 
 # ============================================================
-# Clearance Endpoints
+# Scheme Clearance Endpoints (scheme_clearance 테이블)
 # ============================================================
-@router.get("/clearance", response_model=PaginatedResponse[MssqlClearanceResponse])
+@router.get(
+    "/clearance",
+    response_model=PaginatedResponse[MssqlSchemeClearanceResponse],
+)
 def list_clearances(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=200),
-    client_id: Optional[int] = Query(None, description="고객사 ID 필터"),
-    clearance_status: Optional[str] = Query(None, description="상태 필터"),
-    date_from: Optional[date] = Query(None, description="통관일 시작 (YYYY-MM-DD)"),
-    date_to: Optional[date] = Query(None, description="통관일 종료 (YYYY-MM-DD)"),
+    company: Optional[str] = Query(None, description="고객사명 필터"),
+    im_ex: Optional[str] = Query(None, description="수출입 구분 (IM/EX)"),
+    date_from: Optional[date] = Query(None, description="도착일 시작"),
+    date_to: Optional[date] = Query(None, description="도착일 종료"),
     db: Session = Depends(get_mssql_db),
     current_user: User = Depends(get_current_user),
 ):
-    """통관 내역 목록 조회 (필터, 페이지네이션)"""
+    """통관 스킴 목록 조회 (필터, 페이지네이션)"""
     try:
-        query = select(MssqlClearance)
+        query = select(MssqlSchemeClearance).where(
+            MssqlSchemeClearance.is_active == True
+        )
 
-        # 필터 적용
         filters = []
-        if client_id:
-            filters.append(MssqlClearance.client_id == client_id)
-        if clearance_status:
-            filters.append(MssqlClearance.status == clearance_status)
+        if company:
+            filters.append(
+                MssqlSchemeClearance.company.ilike(f"%{company}%")
+            )
+        if im_ex:
+            filters.append(MssqlSchemeClearance.im_ex == im_ex)
         if date_from:
-            filters.append(MssqlClearance.clearance_date >= date_from)
+            filters.append(MssqlSchemeClearance.arrival_date >= date_from)
         if date_to:
-            filters.append(MssqlClearance.clearance_date <= date_to)
+            filters.append(MssqlSchemeClearance.arrival_date <= date_to)
 
         if filters:
             query = query.where(and_(*filters))
 
-        # 전체 개수
-        total = db.execute(select(func.count()).select_from(query.subquery())).scalar()
+        total = db.execute(
+            select(func.count()).select_from(query.subquery())
+        ).scalar()
 
-        # 페이지네이션
-        query = query.order_by(MssqlClearance.created_date.desc()).offset(skip).limit(limit)
-        result = db.execute(query)
-        clearances = result.scalars().all()
+        query = (
+            query.order_by(MssqlSchemeClearance.id_scheme_cd.desc())
+            .offset(skip)
+            .limit(limit)
+        )
+        clearances = db.execute(query).scalars().all()
 
         return PaginatedResponse(
             total=total,
-            items=[MssqlClearanceResponse.model_validate(c) for c in clearances]
+            items=[
+                MssqlSchemeClearanceResponse.model_validate(c)
+                for c in clearances
+            ],
         )
     except RuntimeError as e:
         raise HTTPException(
@@ -168,84 +162,42 @@ def list_clearances(
         )
 
 
-@router.get("/clearance/{clearance_id}", response_model=MssqlClearanceDetailResponse)
-def get_clearance_detail(
-    clearance_id: int,
+@router.get(
+    "/clearance/{scheme_cd_id}/costs",
+    response_model=MssqlClearanceDetailResponse,
+)
+def get_clearance_costs(
+    scheme_cd_id: int,
     db: Session = Depends(get_mssql_db),
     current_user: User = Depends(get_current_user),
 ):
-    """통관 상세 조회 (연관 선적 정보 포함)"""
+    """통관 비용 상세 조회 (scheme_clearance → clearance 연결)"""
     try:
-        # 통관 정보
+        scheme = db.execute(
+            select(MssqlSchemeClearance).where(
+                MssqlSchemeClearance.id_scheme_cd == scheme_cd_id
+            )
+        ).scalar_one_or_none()
+
+        if not scheme or not scheme.id_clearance:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Clearance costs for scheme {scheme_cd_id} not found",
+            )
+
         clearance = db.execute(
-            select(MssqlClearance).where(MssqlClearance.clearance_id == clearance_id)
+            select(MssqlClearance).where(
+                MssqlClearance.id_clearance == scheme.id_clearance
+            )
         ).scalar_one_or_none()
 
         if not clearance:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Clearance {clearance_id} not found"
+                detail=f"Clearance {scheme.id_clearance} not found",
             )
 
-        # 연관 선적 정보
-        shipments = db.execute(
-            select(MssqlShipment)
-            .where(MssqlShipment.clearance_id == clearance_id)
-            .order_by(MssqlShipment.shipment_no)
-        ).scalars().all()
-
-        # 응답 생성
-        response = MssqlClearanceDetailResponse.model_validate(clearance)
-        response.shipments = [
-            MssqlShipmentResponse.model_validate(s) for s in shipments
-        ]
-
-        return response
-    except RuntimeError as e:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=str(e)
-        )
-
-
-# ============================================================
-# Shipment Endpoints
-# ============================================================
-@router.get("/shipments", response_model=PaginatedResponse[MssqlShipmentResponse])
-def list_shipments(
-    skip: int = Query(0, ge=0),
-    limit: int = Query(50, ge=1, le=200),
-    clearance_id: Optional[int] = Query(None, description="통관 ID 필터"),
-    client_id: Optional[int] = Query(None, description="고객사 ID 필터"),
-    db: Session = Depends(get_mssql_db),
-    current_user: User = Depends(get_current_user),
-):
-    """선적 내역 목록 조회 (필터, 페이지네이션)"""
-    try:
-        query = select(MssqlShipment)
-
-        # 필터 적용
-        filters = []
-        if clearance_id:
-            filters.append(MssqlShipment.clearance_id == clearance_id)
-        if client_id:
-            filters.append(MssqlShipment.client_id == client_id)
-
-        if filters:
-            query = query.where(and_(*filters))
-
-        # 전체 개수
-        total = db.execute(select(func.count()).select_from(query.subquery())).scalar()
-
-        # 페이지네이션
-        query = query.order_by(MssqlShipment.created_date.desc()).offset(skip).limit(limit)
-        result = db.execute(query)
-        shipments = result.scalars().all()
-
-        return PaginatedResponse(
-            total=total,
-            items=[MssqlShipmentResponse.model_validate(s) for s in shipments]
-        )
+        return MssqlClearanceDetailResponse.model_validate(clearance)
     except RuntimeError as e:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
