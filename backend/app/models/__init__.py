@@ -14,6 +14,7 @@ from app.models.accounting import ChartOfAccount, FiscalPeriod, CostCenter
 from app.models.journal import JournalEntry, JournalLine
 from app.models.accounting_parties import AccountingVendor, AccountingCustomer, AccountBalance
 from app.models.cost_management import CostClassification, MonthlyCostSummary
+from app.models.pnl import DailyPnL, MonthlyPnL
 
 __all__ = [
     "Role", "User", "Permission", "RolePermission",
@@ -31,4 +32,5 @@ __all__ = [
     "JournalEntry", "JournalLine",
     "AccountingVendor", "AccountingCustomer", "AccountBalance",
     "CostClassification", "MonthlyCostSummary",
+    "DailyPnL", "MonthlyPnL",
 ]

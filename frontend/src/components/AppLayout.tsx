@@ -80,6 +80,7 @@ const AppLayout: React.FC = () => {
     { key: '/trial-balance', icon: <CalculatorOutlined />, label: '시산표' },
     { key: '/cost-classifications', icon: <AppstoreOutlined />, label: '비용 분류' },
     { key: '/monthly-cost-summary', icon: <BarChartOutlined />, label: '월별 비용' },
+    { key: '/pnl-dashboard', icon: <FundOutlined />, label: 'P&L 손익' },
     { key: '/exchange-rates', icon: <DollarOutlined />, label: '환율 관리' },
     { key: '/audit-logs', icon: <HistoryOutlined />, label: '감사 이력' },
   ];
