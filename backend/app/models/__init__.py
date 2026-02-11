@@ -10,6 +10,7 @@ from app.models.buying import Supplier, PurchaseOrder, PurchaseItem
 from app.models.selling import SellingRecord, SellingItem
 from app.models.workflow import ApprovalWorkflow
 from app.models.erp_audit import ErpAuditLog
+from app.models.accounting import ChartOfAccount, FiscalPeriod, CostCenter
 
 __all__ = [
     "Role", "User", "Permission", "RolePermission",
@@ -23,4 +24,5 @@ __all__ = [
     "Supplier", "PurchaseOrder", "PurchaseItem",
     "SellingRecord", "SellingItem",
     "ApprovalWorkflow", "ErpAuditLog",
+    "ChartOfAccount", "FiscalPeriod", "CostCenter",
 ]

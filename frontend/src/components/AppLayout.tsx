@@ -16,6 +16,8 @@ import {
   ShoppingCartOutlined,
   FundOutlined,
   PieChartOutlined,
+  AccountBookOutlined,
+  CalendarOutlined,
   HistoryOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
@@ -63,6 +65,8 @@ const AppLayout: React.FC = () => {
     { key: '/selling-records', icon: <FundOutlined />, label: '매출 종합' },
     { key: '/profit-dashboard', icon: <PieChartOutlined />, label: '수익성 분석' },
     { key: '/debit-notes', icon: <FileTextOutlined />, label: 'Debit Note' },
+    { key: '/chart-of-accounts', icon: <AccountBookOutlined />, label: '계정과목' },
+    { key: '/fiscal-periods', icon: <CalendarOutlined />, label: '회계기간' },
     { key: '/exchange-rates', icon: <DollarOutlined />, label: '환율 관리' },
     { key: '/audit-logs', icon: <HistoryOutlined />, label: '감사 이력' },
   ];
