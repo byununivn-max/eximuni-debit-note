@@ -23,6 +23,8 @@ import {
   HistoryOutlined,
   CalculatorOutlined,
   UserSwitchOutlined,
+  AppstoreOutlined,
+  BarChartOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -76,6 +78,8 @@ const AppLayout: React.FC = () => {
     { key: '/accounting-vendors', icon: <ShopOutlined />, label: 'AP 공급사' },
     { key: '/accounting-customers', icon: <UserSwitchOutlined />, label: 'AR 고객' },
     { key: '/trial-balance', icon: <CalculatorOutlined />, label: '시산표' },
+    { key: '/cost-classifications', icon: <AppstoreOutlined />, label: '비용 분류' },
+    { key: '/monthly-cost-summary', icon: <BarChartOutlined />, label: '월별 비용' },
     { key: '/exchange-rates', icon: <DollarOutlined />, label: '환율 관리' },
     { key: '/audit-logs', icon: <HistoryOutlined />, label: '감사 이력' },
   ];

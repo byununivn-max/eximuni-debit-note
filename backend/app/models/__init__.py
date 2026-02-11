@@ -13,6 +13,7 @@ from app.models.erp_audit import ErpAuditLog
 from app.models.accounting import ChartOfAccount, FiscalPeriod, CostCenter
 from app.models.journal import JournalEntry, JournalLine
 from app.models.accounting_parties import AccountingVendor, AccountingCustomer, AccountBalance
+from app.models.cost_management import CostClassification, MonthlyCostSummary
 
 __all__ = [
     "Role", "User", "Permission", "RolePermission",
@@ -29,4 +30,5 @@ __all__ = [
     "ChartOfAccount", "FiscalPeriod", "CostCenter",
     "JournalEntry", "JournalLine",
     "AccountingVendor", "AccountingCustomer", "AccountBalance",
+    "CostClassification", "MonthlyCostSummary",
 ]
