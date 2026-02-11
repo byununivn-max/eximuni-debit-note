@@ -15,6 +15,7 @@ import {
   ShopOutlined,
   ShoppingCartOutlined,
   FundOutlined,
+  HistoryOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -61,6 +62,7 @@ const AppLayout: React.FC = () => {
     { key: '/selling-records', icon: <FundOutlined />, label: '매출 종합' },
     { key: '/debit-notes', icon: <FileTextOutlined />, label: 'Debit Note' },
     { key: '/exchange-rates', icon: <DollarOutlined />, label: '환율 관리' },
+    { key: '/audit-logs', icon: <HistoryOutlined />, label: '감사 이력' },
   ];
 
   const roleColor = user?.role === 'admin' ? 'red' : user?.role === 'accountant' ? 'blue' : 'green';

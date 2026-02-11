@@ -8,6 +8,8 @@ from app.models.validation import ValidationRule, ValidationLog
 from app.models.audit import DebitNoteExport, AuditLog, SystemLog
 from app.models.buying import Supplier, PurchaseOrder, PurchaseItem
 from app.models.selling import SellingRecord, SellingItem
+from app.models.workflow import ApprovalWorkflow
+from app.models.erp_audit import ErpAuditLog
 
 __all__ = [
     "Role", "User", "Permission", "RolePermission",
@@ -20,4 +22,5 @@ __all__ = [
     "DebitNoteExport", "AuditLog", "SystemLog",
     "Supplier", "PurchaseOrder", "PurchaseItem",
     "SellingRecord", "SellingItem",
+    "ApprovalWorkflow", "ErpAuditLog",
 ]

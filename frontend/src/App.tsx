@@ -19,6 +19,7 @@ import COPage from './pages/COPage';
 import SuppliersPage from './pages/SuppliersPage';
 import PurchaseOrdersPage from './pages/PurchaseOrdersPage';
 import SellingRecordsPage from './pages/SellingRecordsPage';
+import AuditLogsPage from './pages/AuditLogsPage';
 
 // MSAL 인스턴스 (조건부 생성)
 const msalInstance = msalEnabled ? new PublicClientApplication(msalConfig) : null;
@@ -46,6 +47,7 @@ const AppRoutes: React.FC = () => {
         <Route path="selling-records" element={<SellingRecordsPage />} />
         <Route path="debit-notes" element={<DebitNotesPage />} />
         <Route path="exchange-rates" element={<ExchangeRatesPage />} />
+        <Route path="audit-logs" element={<AuditLogsPage />} />
       </Route>
     </Routes>
   );
