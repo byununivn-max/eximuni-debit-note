@@ -12,6 +12,8 @@ import {
 } from '@ant-design/icons';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { authService } from '../services/auth';
+import { msalEnabled } from '../msalConfig';
 
 const { Header, Sider, Content } = Layout;
 const { Text } = Typography;
@@ -22,7 +24,21 @@ const AppLayout: React.FC = () => {
   const location = useLocation();
   const { user, logout } = useAuth();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    // MSAL 모드에서 로그아웃 시 MSAL 세션도 정리
+    if (msalEnabled && authService.getAuthMode() === 'msal') {
+      try {
+        const { PublicClientApplication } = await import('@azure/msal-browser');
+        const { msalConfig } = await import('../msalConfig');
+        const msalInstance = new PublicClientApplication(msalConfig);
+        await msalInstance.initialize();
+        await msalInstance.logoutPopup({
+          postLogoutRedirectUri: window.location.origin,
+        });
+      } catch (err) {
+        console.error('MSAL logout error:', err);
+      }
+    }
     logout();
     navigate('/login');
   };
@@ -45,7 +61,7 @@ const AppLayout: React.FC = () => {
           borderBottom: '1px solid rgba(255,255,255,0.1)',
         }}>
           <Text strong style={{ color: '#fff', fontSize: collapsed ? 14 : 16 }}>
-            {collapsed ? 'EXI' : 'EXIMUNI'}
+            {collapsed ? 'EXI' : 'EXIMUNI ERP'}
           </Text>
         </div>
         <Menu

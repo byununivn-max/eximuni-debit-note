@@ -36,9 +36,20 @@ services:
     volumes:
       - ./backend:/app
     environment:
+      # PostgreSQL (Docker 내부)
       DATABASE_URL: postgresql+asyncpg://eximuni:eximuni_pass@db:5432/eximuni_db
       DATABASE_URL_SYNC: postgresql://eximuni:eximuni_pass@db:5432/eximuni_db
       REDIS_URL: redis://redis:6379/0
+      # MSSQL (AWS 외부 — .env에서 읽음)
+      MSSQL_SERVER: ${MSSQL_SERVER:-54.180.220.143}
+      MSSQL_DATABASE: ${MSSQL_DATABASE:-UNI_DebitNote}
+      MSSQL_USER: ${MSSQL_USER:-}
+      MSSQL_PASSWORD: ${MSSQL_PASSWORD:-}
+      MSSQL_DRIVER: ${MSSQL_DRIVER:-ODBC Driver 18 for SQL Server}
+      # Azure AD (MSAL)
+      AZURE_CLIENT_ID: ${AZURE_CLIENT_ID:-}
+      AZURE_TENANT_ID: ${AZURE_TENANT_ID:-}
+      AZURE_CLIENT_SECRET: ${AZURE_CLIENT_SECRET:-}
     depends_on:
       db:
         condition: service_healthy

@@ -2,6 +2,9 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ConfigProvider } from 'antd';
 import koKR from 'antd/locale/ko_KR';
+import { PublicClientApplication } from '@azure/msal-browser';
+import { MsalProvider } from '@azure/msal-react';
+import { msalConfig, msalEnabled } from './msalConfig';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import AppLayout from './components/AppLayout';
 import LoginPage from './pages/LoginPage';
@@ -10,6 +13,9 @@ import ClientsPage from './pages/ClientsPage';
 import ShipmentsPage from './pages/ShipmentsPage';
 import DebitNotesPage from './pages/DebitNotesPage';
 import ExchangeRatesPage from './pages/ExchangeRatesPage';
+
+// MSAL 인스턴스 (조건부 생성)
+const msalInstance = msalEnabled ? new PublicClientApplication(msalConfig) : null;
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated } = useAuth();
@@ -33,16 +39,28 @@ const AppRoutes: React.FC = () => {
   );
 };
 
+const AppContent: React.FC = () => (
+  <ConfigProvider locale={koKR}>
+    <BrowserRouter>
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
+    </BrowserRouter>
+  </ConfigProvider>
+);
+
 const App: React.FC = () => {
-  return (
-    <ConfigProvider locale={koKR}>
-      <BrowserRouter>
-        <AuthProvider>
-          <AppRoutes />
-        </AuthProvider>
-      </BrowserRouter>
-    </ConfigProvider>
-  );
+  // MSAL 활성화 시 MsalProvider로 래핑
+  if (msalEnabled && msalInstance) {
+    return (
+      <MsalProvider instance={msalInstance}>
+        <AppContent />
+      </MsalProvider>
+    );
+  }
+
+  // MSAL 미설정 시 기존 방식
+  return <AppContent />;
 };
 
 export default App;

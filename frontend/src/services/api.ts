@@ -7,7 +7,7 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-// 요청 인터셉터: 토큰 자동 첨부
+// 요청 인터셉터: 토큰 자동 첨부 (MSAL 또는 JWT)
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('access_token');
   if (token) {
@@ -23,6 +23,7 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
+      localStorage.removeItem('auth_mode');
       localStorage.removeItem('user');
       window.location.href = '/login';
     }

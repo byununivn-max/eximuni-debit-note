@@ -1,13 +1,16 @@
 """초기 시드 데이터 - 역할, 권한, 비용카테고리, NEXCON 거래처 및 템플릿"""
 import asyncio
+import hashlib
 from datetime import date
 from sqlalchemy import select
-from passlib.context import CryptContext
 
 from app.core.database import async_session, engine, Base
 from app.models import *
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def hash_password(plain: str) -> str:
+    """개발용 비밀번호 해싱 (SHA256) — 운영환경에서는 MSAL SSO 사용"""
+    return hashlib.sha256(plain.encode()).hexdigest()
 
 
 async def seed_roles():
@@ -110,21 +113,21 @@ async def seed_users():
             User(
                 username="admin",
                 email="admin@eximuni.com",
-                hashed_password=pwd_context.hash("admin123"),
+                hashed_password=hash_password("admin123"),
                 full_name="System Admin",
                 role_id=roles["admin"].role_id,
             ),
             User(
                 username="accountant1",
                 email="accountant@eximuni.com",
-                hashed_password=pwd_context.hash("account123"),
+                hashed_password=hash_password("account123"),
                 full_name="Nguyen Van A",
                 role_id=roles["accountant"].role_id,
             ),
             User(
                 username="pic1",
                 email="pic@eximuni.com",
-                hashed_password=pwd_context.hash("pic123"),
+                hashed_password=hash_password("pic123"),
                 full_name="Tran Thi B",
                 role_id=roles["pic"].role_id,
             ),

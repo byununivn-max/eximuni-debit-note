@@ -9,11 +9,14 @@ pydantic==2.5.2
 pydantic-settings==2.1.0
 python-dotenv==1.0.0
 httpx==0.25.2
-passlib[bcrypt]==1.7.4
 python-jose[cryptography]==3.3.0
 python-multipart==0.0.6
-bcrypt==4.0.1
 openpyxl==3.1.2
 celery==5.3.6
 pytest==7.4.4
 pytest-asyncio==0.23.3
+
+# --- ERP v2: Dual DB + Microsoft 인증 ---
+pyodbc==5.1.0
+msal==1.28.0
+cryptography==42.0.2
