@@ -12,6 +12,8 @@ import {
   SafetyCertificateOutlined,
   ToolOutlined,
   AuditOutlined,
+  ShopOutlined,
+  ShoppingCartOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -53,6 +55,8 @@ const AppLayout: React.FC = () => {
     { key: '/clearance', icon: <SafetyCertificateOutlined />, label: 'CD 통관' },
     { key: '/ops', icon: <ToolOutlined />, label: 'Ops 운영' },
     { key: '/co', icon: <AuditOutlined />, label: 'CO 원산지' },
+    { key: '/suppliers', icon: <ShopOutlined />, label: '공급사' },
+    { key: '/purchase-orders', icon: <ShoppingCartOutlined />, label: '매입 관리' },
     { key: '/debit-notes', icon: <FileTextOutlined />, label: 'Debit Note' },
     { key: '/exchange-rates', icon: <DollarOutlined />, label: '환율 관리' },
   ];
