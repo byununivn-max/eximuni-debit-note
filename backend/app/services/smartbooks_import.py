@@ -187,3 +187,146 @@ async def seed_all(db: AsyncSession) -> dict:
         "cost_centers": cc,
         "fiscal_periods": fp,
     }
+
+
+# ============================================================
+# GLTran 임포트 (Sprint 8 확장)
+# ============================================================
+async def import_gltran_data(
+    db: AsyncSession,
+    rows: list[dict],
+) -> dict:
+    """GLTran Excel 행 데이터를 분개전표로 임포트
+
+    rows: [{ Module, Batch Nbr, Ref Nbr, Acct Period, Voucher Date,
+             Description VN, Description EN, Description KR,
+             Account, Dr Amount, Cr Amount, Cury Dr Amount, Cury Cr Amount,
+             Cury ID, Cury Rate, Vendor ID, Customer ID, Employee ID,
+             Cost Center, Invoice No, Invoice Date, Serial No,
+             Tax Code, Tax Amount, Tax Account, ... }, ...]
+
+    전표 그룹핑: (Module, Batch Nbr, Ref Nbr)가 같은 행은 같은 전표의 라인
+    """
+    from decimal import Decimal as D
+    from datetime import datetime as dt
+    from app.models.journal import JournalEntry, JournalLine
+
+    entries_created = 0
+    lines_created = 0
+    skipped = 0
+    errors = []
+
+    # 전표 그룹핑
+    entry_groups: dict[str, list[dict]] = {}
+    for row in rows:
+        module = str(row.get("Module", "")).strip()
+        batch = str(row.get("Batch Nbr", "")).strip()
+        ref = str(row.get("Ref Nbr", "")).strip()
+        if not module or not ref:
+            skipped += 1
+            continue
+        key = f"{module}|{batch}|{ref}"
+        entry_groups.setdefault(key, []).append(row)
+
+    for key, group_rows in entry_groups.items():
+        module, batch, ref = key.split("|", 2)
+        first = group_rows[0]
+
+        # 전표번호 중복 체크
+        existing = await db.execute(
+            select(JournalEntry).where(
+                JournalEntry.entry_number == ref,
+            )
+        )
+        if existing.scalar_one_or_none():
+            skipped += len(group_rows)
+            continue
+
+        # 회계기간 파싱: "012025" → month=1, year=2025
+        acct_period = str(first.get("Acct Period", "")).strip()
+        try:
+            fiscal_month = int(acct_period[:2])
+            fiscal_year = int(acct_period[2:])
+        except (ValueError, IndexError):
+            fiscal_year = dt.utcnow().year
+            fiscal_month = 1
+            errors.append(f"{ref}: Invalid Acct Period '{acct_period}'")
+
+        # 전표일자
+        voucher_date = first.get("Voucher Date")
+        if isinstance(voucher_date, str):
+            try:
+                voucher_date = dt.strptime(voucher_date, "%Y-%m-%d").date()
+            except ValueError:
+                voucher_date = None
+        entry_date = voucher_date or date(fiscal_year, fiscal_month, 1)
+
+        # 라인 생성 + 차대 합계
+        total_debit = D("0")
+        total_credit = D("0")
+        lines = []
+
+        for i, r in enumerate(group_rows, 1):
+            dr = D(str(r.get("Dr Amount", 0) or 0))
+            cr = D(str(r.get("Cr Amount", 0) or 0))
+            total_debit += dr
+            total_credit += cr
+
+            line = JournalLine(
+                line_number=i,
+                account_code=str(r.get("Account", "")).strip()[:7],
+                description_vn=str(r.get("Description VN", "") or "").strip()[:500] or None,
+                description_en=str(r.get("Description EN", "") or "").strip()[:500] or None,
+                debit_amount=dr,
+                credit_amount=cr,
+                currency_amount=D(str(r.get("Cury Dr Amount", 0) or 0))
+                    or D(str(r.get("Cury Cr Amount", 0) or 0)) or None,
+                currency_code=str(r.get("Cury ID", "VND")).strip()[:3] or None,
+                exchange_rate=D(str(r.get("Cury Rate", 1) or 1)),
+                vendor_id=str(r.get("Vendor ID", "") or "").strip()[:20] or None,
+                customer_id=str(r.get("Customer ID", "") or "").strip()[:20] or None,
+                employee_id=str(r.get("Employee ID", "") or "").strip()[:20] or None,
+                cost_center_id=None,
+                job_center=str(r.get("Job Center", "") or "").strip()[:20] or None,
+                profit_center=str(r.get("Profit Center", "") or "").strip()[:20] or None,
+                tax_code=str(r.get("Tax Code", "") or "").strip()[:10] or None,
+                tax_amount=D(str(r.get("Tax Amount", 0) or 0)),
+                tax_account=str(r.get("Tax Account", "") or "").strip()[:7] or None,
+            )
+            lines.append(line)
+
+        entry = JournalEntry(
+            entry_number=ref,
+            module=module[:5],
+            fiscal_year=fiscal_year,
+            fiscal_month=fiscal_month,
+            entry_date=entry_date,
+            voucher_date=voucher_date,
+            description_vn=str(first.get("Description VN", "") or "").strip()[:500] or None,
+            description_en=str(first.get("Description EN", "") or "").strip()[:500] or None,
+            description_kr=str(first.get("Description KR", "") or "").strip()[:500] or None,
+            currency_code=str(first.get("Cury ID", "VND")).strip()[:3],
+            exchange_rate=D(str(first.get("Cury Rate", 1) or 1)),
+            total_debit=total_debit,
+            total_credit=total_credit,
+            status="posted",
+            source="smartbooks_import",
+            smartbooks_batch_nbr=batch[:20] if batch else None,
+            vendor_id=str(first.get("Vendor ID", "") or "").strip()[:20] or None,
+            customer_id=str(first.get("Customer ID", "") or "").strip()[:20] or None,
+            employee_id=str(first.get("Employee ID", "") or "").strip()[:20] or None,
+            invoice_no=str(first.get("Invoice No", "") or "").strip()[:50] or None,
+            serial_no=str(first.get("Serial No", "") or "").strip()[:50] or None,
+        )
+        entry.lines = lines
+        db.add(entry)
+        entries_created += 1
+        lines_created += len(lines)
+
+    await db.commit()
+    return {
+        "entries_created": entries_created,
+        "lines_created": lines_created,
+        "errors": errors[:50],
+        "skipped": skipped,
+    }

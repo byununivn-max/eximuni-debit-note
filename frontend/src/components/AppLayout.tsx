@@ -18,6 +18,8 @@ import {
   PieChartOutlined,
   AccountBookOutlined,
   CalendarOutlined,
+  BookOutlined,
+  DatabaseOutlined,
   HistoryOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
@@ -67,6 +69,8 @@ const AppLayout: React.FC = () => {
     { key: '/debit-notes', icon: <FileTextOutlined />, label: 'Debit Note' },
     { key: '/chart-of-accounts', icon: <AccountBookOutlined />, label: '계정과목' },
     { key: '/fiscal-periods', icon: <CalendarOutlined />, label: '회계기간' },
+    { key: '/journal-entries', icon: <BookOutlined />, label: '분개전표' },
+    { key: '/smartbooks-import', icon: <DatabaseOutlined />, label: 'SB 임포트' },
     { key: '/exchange-rates', icon: <DollarOutlined />, label: '환율 관리' },
     { key: '/audit-logs', icon: <HistoryOutlined />, label: '감사 이력' },
   ];

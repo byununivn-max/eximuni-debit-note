@@ -11,6 +11,7 @@ from app.models.selling import SellingRecord, SellingItem
 from app.models.workflow import ApprovalWorkflow
 from app.models.erp_audit import ErpAuditLog
 from app.models.accounting import ChartOfAccount, FiscalPeriod, CostCenter
+from app.models.journal import JournalEntry, JournalLine
 
 __all__ = [
     "Role", "User", "Permission", "RolePermission",
@@ -25,4 +26,5 @@ __all__ = [
     "SellingRecord", "SellingItem",
     "ApprovalWorkflow", "ErpAuditLog",
     "ChartOfAccount", "FiscalPeriod", "CostCenter",
+    "JournalEntry", "JournalLine",
 ]

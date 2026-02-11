@@ -23,6 +23,8 @@ import AuditLogsPage from './pages/AuditLogsPage';
 import ProfitDashboardPage from './pages/ProfitDashboardPage';
 import ChartOfAccountsPage from './pages/ChartOfAccountsPage';
 import FiscalPeriodsPage from './pages/FiscalPeriodsPage';
+import JournalEntriesPage from './pages/JournalEntriesPage';
+import SmartBooksImportPage from './pages/SmartBooksImportPage';
 
 // MSAL 인스턴스 (조건부 생성)
 const msalInstance = msalEnabled ? new PublicClientApplication(msalConfig) : null;
@@ -53,6 +55,8 @@ const AppRoutes: React.FC = () => {
         <Route path="profit-dashboard" element={<ProfitDashboardPage />} />
         <Route path="chart-of-accounts" element={<ChartOfAccountsPage />} />
         <Route path="fiscal-periods" element={<FiscalPeriodsPage />} />
+        <Route path="journal-entries" element={<JournalEntriesPage />} />
+        <Route path="smartbooks-import" element={<SmartBooksImportPage />} />
         <Route path="audit-logs" element={<AuditLogsPage />} />
       </Route>
     </Routes>

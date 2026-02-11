@@ -20,6 +20,7 @@ from app.api.workflows import router as workflows_router
 from app.api.dashboard import router as dashboard_router
 from app.api.chart_of_accounts import router as coa_router
 from app.api.fiscal_periods import router as fiscal_router
+from app.api.journal_entries import router as journal_router
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -57,6 +58,7 @@ app.include_router(workflows_router)
 app.include_router(dashboard_router)
 app.include_router(coa_router)
 app.include_router(fiscal_router)
+app.include_router(journal_router)
 
 
 @app.get("/")
