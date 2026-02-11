@@ -7,6 +7,7 @@ from app.models.debit_note import DebitNote, DebitNoteLine, DebitNoteWorkflow
 from app.models.validation import ValidationRule, ValidationLog
 from app.models.audit import DebitNoteExport, AuditLog, SystemLog
 from app.models.buying import Supplier, PurchaseOrder, PurchaseItem
+from app.models.selling import SellingRecord, SellingItem
 
 __all__ = [
     "Role", "User", "Permission", "RolePermission",
@@ -18,4 +19,5 @@ __all__ = [
     "ValidationRule", "ValidationLog",
     "DebitNoteExport", "AuditLog", "SystemLog",
     "Supplier", "PurchaseOrder", "PurchaseItem",
+    "SellingRecord", "SellingItem",
 ]

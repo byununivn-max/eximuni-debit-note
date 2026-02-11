@@ -15,6 +15,7 @@ from app.api.excel_export import router as excel_export_router
 from app.api.mssql import router as mssql_router
 from app.api.suppliers import router as suppliers_router
 from app.api.purchase_orders import router as purchase_orders_router
+from app.api.selling_records import router as selling_records_router
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -47,6 +48,7 @@ app.include_router(excel_export_router)
 app.include_router(mssql_router)
 app.include_router(suppliers_router)
 app.include_router(purchase_orders_router)
+app.include_router(selling_records_router)
 
 
 @app.get("/")
