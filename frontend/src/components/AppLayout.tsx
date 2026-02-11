@@ -9,6 +9,9 @@ import {
   LogoutOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
+  SafetyCertificateOutlined,
+  ToolOutlined,
+  AuditOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -47,6 +50,9 @@ const AppLayout: React.FC = () => {
     { key: '/', icon: <DashboardOutlined />, label: 'Dashboard' },
     { key: '/clients', icon: <TeamOutlined />, label: '거래처 관리' },
     { key: '/shipments', icon: <ContainerOutlined />, label: '거래 데이터' },
+    { key: '/clearance', icon: <SafetyCertificateOutlined />, label: 'CD 통관' },
+    { key: '/ops', icon: <ToolOutlined />, label: 'Ops 운영' },
+    { key: '/co', icon: <AuditOutlined />, label: 'CO 원산지' },
     { key: '/debit-notes', icon: <FileTextOutlined />, label: 'Debit Note' },
     { key: '/exchange-rates', icon: <DollarOutlined />, label: '환율 관리' },
   ];
