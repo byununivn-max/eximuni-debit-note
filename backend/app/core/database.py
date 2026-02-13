@@ -5,6 +5,7 @@ MSSQL: 기존 운영 테이블 (clients, clearance, ...) — AWS 외부 54.180.2
 """
 from typing import Generator
 
+from fastapi import HTTPException, status
 from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
@@ -62,10 +63,22 @@ def get_mssql_db() -> Generator[Session, None, None]:
     """MSSQL sync 세션 (기존 운영 테이블 접근용)"""
     _init_mssql()
     if _mssql_session_factory is None:
-        raise RuntimeError(
-            "MSSQL 연결 설정이 없습니다. .env에 MSSQL_USER, MSSQL_PASSWORD를 설정하세요."
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="MSSQL not configured. Set MSSQL_USER/MSSQL_PASSWORD in .env",
         )
-    session = _mssql_session_factory()
+    try:
+        session = _mssql_session_factory()
+        session.execute(
+            __import__("sqlalchemy").text("SELECT 1")
+        )
+    except Exception as exc:
+        import logging
+        logging.getLogger("app.db").error(f"MSSQL connection failed: {exc}")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="MSSQL connection failed — server may be unreachable",
+        )
     try:
         yield session
     finally:

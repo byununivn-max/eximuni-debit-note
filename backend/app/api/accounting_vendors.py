@@ -9,7 +9,7 @@ from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.core.security import get_current_user
+from app.core.security import get_current_user, require_role
 from app.models.user import User
 from app.models.accounting_parties import AccountingVendor
 from app.schemas.accounting_parties import (
@@ -71,11 +71,9 @@ async def get_vendor(
 async def create_vendor(
     payload: AccVendorCreate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_role("admin", "accountant")),
 ):
     """회계 공급사 생성"""
-    if current_user.role not in ("admin", "accountant"):
-        raise HTTPException(403, "admin 또는 accountant만 생성 가능")
 
     existing = await db.execute(
         select(AccountingVendor).where(AccountingVendor.tax_id == payload.tax_id)
@@ -93,11 +91,9 @@ async def create_vendor(
 @router.post("/extract-from-journal")
 async def extract_vendors(
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_role("admin")),
 ):
     """분개장에서 Vendor ID 추출 → 회계 공급사 시딩"""
-    if current_user.role != "admin":
-        raise HTTPException(403, "admin만 추출 실행 가능")
 
     from app.services.party_matcher import extract_vendors_from_journal
     return await extract_vendors_from_journal(db)
@@ -106,11 +102,9 @@ async def extract_vendors(
 @router.post("/match-suppliers", response_model=MatchResult)
 async def match_suppliers(
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_role("admin")),
 ):
     """회계 공급사 ↔ ERP 공급사 자동 매칭 (tax_id 기준)"""
-    if current_user.role != "admin":
-        raise HTTPException(403, "admin만 매칭 실행 가능")
 
     from app.services.party_matcher import match_vendors_to_suppliers
     result = await match_vendors_to_suppliers(db)

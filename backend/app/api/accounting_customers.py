@@ -9,7 +9,7 @@ from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.core.security import get_current_user
+from app.core.security import get_current_user, require_role
 from app.models.user import User
 from app.models.accounting_parties import AccountingCustomer
 from app.schemas.accounting_parties import (
@@ -73,11 +73,9 @@ async def get_customer(
 async def create_customer(
     payload: AccCustomerCreate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_role("admin", "accountant")),
 ):
     """회계 고객 생성"""
-    if current_user.role not in ("admin", "accountant"):
-        raise HTTPException(403, "admin 또는 accountant만 생성 가능")
 
     existing = await db.execute(
         select(AccountingCustomer).where(
@@ -97,11 +95,9 @@ async def create_customer(
 @router.post("/extract-from-journal")
 async def extract_customers(
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_role("admin")),
 ):
     """분개장에서 Customer ID 추출 → 회계 고객 시딩"""
-    if current_user.role != "admin":
-        raise HTTPException(403, "admin만 추출 실행 가능")
 
     from app.services.party_matcher import extract_customers_from_journal
     return await extract_customers_from_journal(db)

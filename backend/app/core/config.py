@@ -1,3 +1,5 @@
+from urllib.parse import quote_plus
+
 from pydantic_settings import BaseSettings
 
 
@@ -18,9 +20,9 @@ class Settings(BaseSettings):
 
     @property
     def MSSQL_URL(self) -> str:
-        """pyodbc 연결 문자열"""
+        """pyodbc 연결 문자열 — 특수문자(@, ; 등) URL 인코딩 처리"""
         return (
-            f"mssql+pyodbc://{self.MSSQL_USER}:{self.MSSQL_PASSWORD}"
+            f"mssql+pyodbc://{quote_plus(self.MSSQL_USER)}:{quote_plus(self.MSSQL_PASSWORD)}"
             f"@{self.MSSQL_SERVER}/{self.MSSQL_DATABASE}"
             f"?driver={self.MSSQL_DRIVER}&TrustServerCertificate=yes&Encrypt=optional"
         )

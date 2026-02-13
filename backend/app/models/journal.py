@@ -65,9 +65,9 @@ class JournalEntry(Base):
     invoice_no = Column(String(50), nullable=True)
     invoice_date = Column(Date, nullable=True)
     serial_no = Column(String(50), nullable=True)
-    created_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+    created_by = Column(Integer, ForeignKey("users.user_id"), nullable=True)
     posted_at = Column(DateTime, nullable=True)
-    posted_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+    posted_by = Column(Integer, ForeignKey("users.user_id"), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(
         DateTime, default=datetime.utcnow,

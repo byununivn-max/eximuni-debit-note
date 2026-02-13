@@ -13,6 +13,7 @@ from app.schemas.purchase_order import (
     PurchaseOrderCreate, PurchaseOrderUpdate,
     PurchaseOrderResponse, PurchaseOrderListResponse,
 )
+from app.utils.pagination import paginate
 
 router = APIRouter(prefix="/api/v1/purchase-orders", tags=["purchase-orders"])
 
@@ -54,31 +55,21 @@ async def list_purchase_orders(
         selectinload(PurchaseOrder.supplier),
         selectinload(PurchaseOrder.items),
     )
-    count_query = select(func.count(PurchaseOrder.po_id))
 
-    filters = []
     if supplier_id:
-        filters.append(PurchaseOrder.supplier_id == supplier_id)
+        query = query.where(PurchaseOrder.supplier_id == supplier_id)
     if status:
-        filters.append(PurchaseOrder.status == status)
+        query = query.where(PurchaseOrder.status == status)
     if payment_status:
-        filters.append(PurchaseOrder.payment_status == payment_status)
+        query = query.where(PurchaseOrder.payment_status == payment_status)
     if search:
-        filters.append(
+        query = query.where(
             PurchaseOrder.po_number.ilike(f"%{search}%")
             | PurchaseOrder.invoice_no.ilike(f"%{search}%")
         )
 
-    for f in filters:
-        query = query.where(f)
-        count_query = count_query.where(f)
-
-    total = (await db.execute(count_query)).scalar()
-    result = await db.execute(
-        query.order_by(PurchaseOrder.po_id.desc())
-        .offset(skip).limit(limit)
-    )
-    pos = result.scalars().unique().all()
+    query = query.order_by(PurchaseOrder.po_id.desc())
+    total, pos = await paginate(db, query, skip, limit)
 
     return PurchaseOrderListResponse(
         total=total,

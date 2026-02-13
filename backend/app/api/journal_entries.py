@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.core.database import get_db
-from app.core.security import get_current_user
+from app.core.security import get_current_user, require_role
 from app.models.user import User
 from app.models.journal import JournalEntry, JournalLine
 from app.schemas.journal_entry import (
@@ -70,7 +70,7 @@ async def list_entries(
     # 페이지네이션
     q = q.offset((page - 1) * size).limit(size)
     result = await db.execute(q)
-    items = result.scalars().all()
+    items = result.unique().scalars().all()
 
     return JournalEntryListResponse(items=items, total=total)
 
@@ -162,11 +162,9 @@ async def get_entry(
 async def create_entry(
     payload: JournalEntryCreate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_role("admin", "accountant")),
 ):
     """분개전표 수동 생성"""
-    if current_user.role not in ("admin", "accountant"):
-        raise HTTPException(403, "admin 또는 accountant만 전표 생성 가능")
 
     # 전표번호 중복 체크
     existing = await db.execute(
@@ -213,11 +211,9 @@ async def create_entry(
 async def post_entry(
     entry_id: int,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_role("admin", "accountant")),
 ):
     """분개전표 게시 (draft → posted)"""
-    if current_user.role not in ("admin", "accountant"):
-        raise HTTPException(403, "admin 또는 accountant만 전표 게시 가능")
 
     result = await db.execute(
         select(JournalEntry)
@@ -250,11 +246,9 @@ async def post_entry(
 async def reverse_entry(
     entry_id: int,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_role("admin")),
 ):
     """분개전표 역분개 (posted → reversed)"""
-    if current_user.role != "admin":
-        raise HTTPException(403, "admin만 전표 역분개 가능")
 
     result = await db.execute(
         select(JournalEntry)
@@ -277,11 +271,9 @@ async def reverse_entry(
 async def import_gltran(
     rows: List[dict],
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_role("admin")),
 ):
     """SmartBooks GLTran 데이터 임포트 (JSON 행 배열)"""
-    if current_user.role != "admin":
-        raise HTTPException(403, "admin만 SmartBooks 임포트 실행 가능")
 
     from app.services.smartbooks_import import import_gltran_data
     from app.schemas.journal_entry import JournalImportResult

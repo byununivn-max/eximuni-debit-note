@@ -11,7 +11,7 @@ from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.core.security import get_current_user
+from app.core.security import get_current_user, require_role
 from app.models.user import User
 from app.models.pnl import MonthlyPnL
 
@@ -173,11 +173,9 @@ async def calculate_pnl(
     fiscal_year: int = Query(...),
     fiscal_month: int = Query(..., ge=1, le=12),
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_role("admin", "accountant")),
 ):
     """월별 P&L 계산 실행"""
-    if current_user.role not in ("admin", "accountant"):
-        raise HTTPException(403, "admin 또는 accountant만 계산 실행 가능")
 
     from app.services.pnl_calculator import calculate_monthly_pnl
     return await calculate_monthly_pnl(db, fiscal_year, fiscal_month)
@@ -187,11 +185,9 @@ async def calculate_pnl(
 async def calculate_year_pnl(
     fiscal_year: int = Query(...),
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_role("admin", "accountant")),
 ):
     """연간 P&L 일괄 계산 (1~12월 순차)"""
-    if current_user.role not in ("admin", "accountant"):
-        raise HTTPException(403, "admin 또는 accountant만 계산 실행 가능")
 
     from app.services.pnl_calculator import calculate_monthly_pnl
     results = []

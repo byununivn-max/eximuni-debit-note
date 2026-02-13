@@ -8,6 +8,7 @@ from app.core.security import get_current_user, require_role
 from app.models.user import User
 from app.models.client import Client
 from app.schemas.client import ClientCreate, ClientUpdate, ClientResponse, ClientListResponse
+from app.utils.pagination import paginate
 
 router = APIRouter(prefix="/api/v1/clients", tags=["clients"])
 
@@ -22,24 +23,17 @@ async def list_clients(
     current_user: User = Depends(get_current_user),
 ):
     query = select(Client)
-    count_query = select(func.count(Client.client_id))
 
     if search:
         query = query.where(
             (Client.client_code.ilike(f"%{search}%")) |
             (Client.client_name.ilike(f"%{search}%"))
         )
-        count_query = count_query.where(
-            (Client.client_code.ilike(f"%{search}%")) |
-            (Client.client_name.ilike(f"%{search}%"))
-        )
     if is_active is not None:
         query = query.where(Client.is_active == is_active)
-        count_query = count_query.where(Client.is_active == is_active)
 
-    total = (await db.execute(count_query)).scalar()
-    result = await db.execute(query.order_by(Client.client_code).offset(skip).limit(limit))
-    clients = result.scalars().all()
+    query = query.order_by(Client.client_code)
+    total, clients = await paginate(db, query, skip, limit)
 
     return ClientListResponse(total=total, items=clients)
 

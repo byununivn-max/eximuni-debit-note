@@ -16,6 +16,7 @@ from app.schemas.shipment import (
     ShipmentCreate, ShipmentUpdate, ShipmentResponse,
     ShipmentListResponse, FeeDetailResponse, DuplicateWarning,
 )
+from app.utils.pagination import paginate
 
 router = APIRouter(prefix="/api/v1/shipments", tags=["shipments"])
 
@@ -81,23 +82,16 @@ async def list_shipments(
     current_user: User = Depends(get_current_user),
 ):
     query = select(Shipment).options(selectinload(Shipment.fee_details))
-    count_query = select(func.count(Shipment.shipment_id))
 
     if client_id:
         query = query.where(Shipment.client_id == client_id)
-        count_query = count_query.where(Shipment.client_id == client_id)
     if shipment_type:
         query = query.where(Shipment.shipment_type == shipment_type)
-        count_query = count_query.where(Shipment.shipment_type == shipment_type)
     if status:
         query = query.where(Shipment.status == status)
-        count_query = count_query.where(Shipment.status == status)
 
-    total = (await db.execute(count_query)).scalar()
-    result = await db.execute(
-        query.order_by(Shipment.delivery_date.desc()).offset(skip).limit(limit)
-    )
-    shipments = result.scalars().unique().all()
+    query = query.order_by(Shipment.delivery_date.desc())
+    total, shipments = await paginate(db, query, skip, limit)
 
     items = []
     for s in shipments:

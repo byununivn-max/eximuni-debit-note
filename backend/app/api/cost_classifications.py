@@ -10,7 +10,7 @@ from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.core.security import get_current_user
+from app.core.security import get_current_user, require_role
 from app.models.user import User
 from app.models.cost_management import CostClassification, MonthlyCostSummary
 from app.schemas.cost_classification import (
@@ -61,33 +61,13 @@ async def list_classifications(
     )
 
 
-@router.get("/{classification_id}", response_model=CostClassificationResponse)
-async def get_classification(
-    classification_id: int,
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    """비용 분류 상세"""
-    result = await db.execute(
-        select(CostClassification).where(
-            CostClassification.classification_id == classification_id,
-        )
-    )
-    item = result.scalar_one_or_none()
-    if not item:
-        raise HTTPException(404, f"Cost classification {classification_id} not found")
-    return item
-
-
 @router.post("", response_model=CostClassificationResponse, status_code=201)
 async def create_classification(
     payload: CostClassificationCreate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_role("admin", "accountant")),
 ):
     """비용 분류 생성"""
-    if current_user.role not in ("admin", "accountant"):
-        raise HTTPException(403, "admin 또는 accountant만 생성 가능")
 
     # 동일 계정코드 중복 확인
     existing = await db.execute(
@@ -117,11 +97,9 @@ async def update_classification(
     classification_id: int,
     payload: CostClassificationUpdate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_role("admin", "accountant")),
 ):
     """비용 분류 수정"""
-    if current_user.role not in ("admin", "accountant"):
-        raise HTTPException(403, "admin 또는 accountant만 수정 가능")
 
     result = await db.execute(
         select(CostClassification).where(
@@ -144,11 +122,9 @@ async def update_classification(
 @router.post("/seed", response_model=SeedResult)
 async def seed_classifications(
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_role("admin")),
 ):
     """642x 초기 비용 분류 시딩"""
-    if current_user.role != "admin":
-        raise HTTPException(403, "admin만 시딩 실행 가능")
 
     from app.services.cost_allocator import seed_cost_classifications
     result = await seed_cost_classifications(db)
@@ -163,11 +139,9 @@ async def calculate_monthly(
     fiscal_year: int = Query(..., description="회계연도"),
     fiscal_month: int = Query(..., ge=1, le=12, description="회계월"),
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_role("admin", "accountant")),
 ):
     """월별 비용 집계 실행 (분개장 → 월별 비용 요약)"""
-    if current_user.role not in ("admin", "accountant"):
-        raise HTTPException(403, "admin 또는 accountant만 집계 실행 가능")
 
     from app.services.cost_allocator import calculate_monthly_cost
     return await calculate_monthly_cost(db, fiscal_year, fiscal_month)
@@ -270,3 +244,24 @@ async def monthly_overview(
         grand_total=grand_total,
         grand_daily=grand_daily,
     )
+
+
+# ============================================================
+# 비용 분류 상세 (path param이므로 고정 경로보다 뒤에 위치)
+# ============================================================
+@router.get("/{classification_id}", response_model=CostClassificationResponse)
+async def get_classification(
+    classification_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """비용 분류 상세"""
+    result = await db.execute(
+        select(CostClassification).where(
+            CostClassification.classification_id == classification_id,
+        )
+    )
+    item = result.scalar_one_or_none()
+    if not item:
+        raise HTTPException(404, f"Cost classification {classification_id} not found")
+    return item

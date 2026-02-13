@@ -10,7 +10,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.core.security import get_current_user
+from app.core.security import get_current_user, require_role
 from app.models.user import User
 from app.models.accounting import FiscalPeriod
 from app.schemas.chart_of_accounts import (
@@ -65,11 +65,9 @@ async def get_period(
 async def generate_periods(
     year: int = Query(..., description="생성할 연도"),
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_role("admin", "accountant")),
 ):
     """특정 연도 12개월 회계기간 자동 생성"""
-    if current_user.role not in ("admin", "accountant"):
-        raise HTTPException(403, "admin 또는 accountant만 기간 생성 가능")
 
     result = await seed_fiscal_periods(db, year)
     return result
@@ -79,11 +77,9 @@ async def generate_periods(
 async def close_period(
     period_id: int,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_role("admin", "accountant")),
 ):
     """회계기간 마감"""
-    if current_user.role not in ("admin", "accountant"):
-        raise HTTPException(403, "admin 또는 accountant만 기간 마감 가능")
 
     result = await db.execute(
         select(FiscalPeriod).where(FiscalPeriod.period_id == period_id)
@@ -106,11 +102,9 @@ async def close_period(
 async def reopen_period(
     period_id: int,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_role("admin")),
 ):
     """회계기간 마감 해제"""
-    if current_user.role != "admin":
-        raise HTTPException(403, "admin만 기간 재개 가능")
 
     result = await db.execute(
         select(FiscalPeriod).where(FiscalPeriod.period_id == period_id)

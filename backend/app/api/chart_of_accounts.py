@@ -9,7 +9,8 @@ from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.core.security import get_current_user
+from app.core.security import get_current_user, require_role
+from app.core.redis_client import cache_get, cache_set
 from app.models.user import User
 from app.models.accounting import ChartOfAccount, CostCenter
 from app.schemas.chart_of_accounts import (
@@ -36,7 +37,12 @@ async def list_accounts(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """계정과목 목록 조회 (필터 지원)"""
+    """계정과목 목록 조회 (필터 지원, 30분 캐시)"""
+    cache_key = f"coa:list:{account_type}:{is_active}:{search}"
+    cached = await cache_get(cache_key)
+    if cached:
+        return cached
+
     q = select(ChartOfAccount).order_by(ChartOfAccount.account_code)
 
     if account_type:
@@ -53,7 +59,14 @@ async def list_accounts(
         )
 
     result = await db.execute(q)
-    return result.scalars().all()
+    items = result.scalars().all()
+    # ORM 객체를 dict로 변환하여 캐시 저장
+    items_data = [
+        CoAResponse.model_validate(item).model_dump(mode="json")
+        for item in items
+    ]
+    await cache_set(cache_key, items_data, ttl=1800)  # 30분
+    return items
 
 
 @router.get("/tree", response_model=List[CoATreeItem])
@@ -160,11 +173,9 @@ async def get_account(
 async def create_account(
     payload: CoACreate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_role("admin", "accountant")),
 ):
     """계정과목 생성"""
-    if current_user.role not in ("admin", "accountant"):
-        raise HTTPException(403, "admin 또는 accountant만 계정 생성 가능")
 
     existing = await db.execute(
         select(ChartOfAccount).where(
@@ -186,11 +197,9 @@ async def update_account(
     account_code: str,
     payload: CoAUpdate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_role("admin", "accountant")),
 ):
     """계정과목 수정"""
-    if current_user.role not in ("admin", "accountant"):
-        raise HTTPException(403, "admin 또는 accountant만 계정 수정 가능")
 
     result = await db.execute(
         select(ChartOfAccount).where(
@@ -213,11 +222,9 @@ async def update_account(
 @router.post("/seed", status_code=200)
 async def seed_accounts(
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_role("admin")),
 ):
     """SmartBooks 54개 계정과목 + 비용센터 시딩"""
-    if current_user.role != "admin":
-        raise HTTPException(403, "admin만 시딩 실행 가능")
 
     coa_result = await seed_chart_of_accounts(db)
     cc_result = await seed_cost_centers(db)
@@ -255,11 +262,9 @@ async def list_cost_centers(
 async def create_cost_center(
     payload: CostCenterCreate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_role("admin")),
 ):
     """비용센터 생성"""
-    if current_user.role != "admin":
-        raise HTTPException(403, "admin만 비용센터 생성 가능")
 
     existing = await db.execute(
         select(CostCenter).where(CostCenter.center_code == payload.center_code)

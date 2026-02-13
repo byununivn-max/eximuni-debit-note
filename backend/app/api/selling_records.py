@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session, selectinload
 
 from app.core.database import get_db, get_mssql_db
-from app.core.security import get_current_user
+from app.core.security import get_current_user, require_role
 from app.models.user import User
 from app.models.selling import SellingRecord, SellingItem
 from app.schemas.selling import (
@@ -76,7 +76,7 @@ async def list_selling_records(
         .limit(limit)
     )
     result = await db.execute(query)
-    records = result.scalars().all()
+    records = result.unique().scalars().all()
 
     return SellingRecordListResponse(
         total=total,
@@ -158,17 +158,8 @@ async def get_selling_record(
 async def trigger_sync(
     mssql_db: Session = Depends(get_mssql_db),
     pg_db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_role("admin", "accountant")),
 ):
-    """MSSQL → PostgreSQL 매출 데이터 전체 동기화
-
-    admin 또는 accountant 역할만 실행 가능
-    """
-    if current_user.role not in ("admin", "accountant"):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="동기화는 admin 또는 accountant만 실행할 수 있습니다",
-        )
-
+    """MSSQL → PostgreSQL 매출 데이터 전체 동기화"""
     result = await sync_selling_records(mssql_db, pg_db)
     return SyncResultResponse(**result)

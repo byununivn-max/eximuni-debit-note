@@ -76,7 +76,7 @@ class FiscalPeriod(Base):
     is_closed = Column(Boolean, default=False, nullable=False)
     closed_at = Column(DateTime, nullable=True)
     closed_by = Column(
-        Integer, ForeignKey("users.id"), nullable=True,
+        Integer, ForeignKey("users.user_id"), nullable=True,
     )
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(

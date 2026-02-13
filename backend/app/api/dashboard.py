@@ -12,6 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.security import get_current_user
+from app.core.redis_client import cache_get, cache_set
 from app.models.user import User
 from app.services.profit_calc import (
     get_kpi_summary,
@@ -61,7 +62,13 @@ async def dashboard_kpi(
     current_user: User = Depends(get_current_user),
 ):
     """KPI 요약: 매출/매입/영업이익/GP마진"""
+    cache_key = f"dashboard:kpi:{date_from}:{date_to}"
+    cached = await cache_get(cache_key)
+    if cached:
+        return KpiResponse(**cached)
+
     result = await get_kpi_summary(db, date_from, date_to)
+    await cache_set(cache_key, result, ttl=300)  # 5분
     return KpiResponse(**result)
 
 

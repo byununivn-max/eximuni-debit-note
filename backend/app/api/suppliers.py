@@ -10,6 +10,7 @@ from app.models.buying import Supplier
 from app.schemas.supplier import (
     SupplierCreate, SupplierUpdate, SupplierResponse, SupplierListResponse,
 )
+from app.utils.pagination import paginate
 
 router = APIRouter(prefix="/api/v1/suppliers", tags=["suppliers"])
 
@@ -26,32 +27,19 @@ async def list_suppliers(
 ):
     """공급사 목록 조회"""
     query = select(Supplier)
-    count_query = select(func.count(Supplier.supplier_id))
 
     if search:
-        search_filter = (
+        query = query.where(
             Supplier.supplier_code.ilike(f"%{search}%")
-        ) | (
-            Supplier.supplier_name.ilike(f"%{search}%")
+            | Supplier.supplier_name.ilike(f"%{search}%")
         )
-        query = query.where(search_filter)
-        count_query = count_query.where(search_filter)
-
     if supplier_type:
         query = query.where(Supplier.supplier_type == supplier_type)
-        count_query = count_query.where(
-            Supplier.supplier_type == supplier_type
-        )
-
     if is_active is not None:
         query = query.where(Supplier.is_active == is_active)
-        count_query = count_query.where(Supplier.is_active == is_active)
 
-    total = (await db.execute(count_query)).scalar()
-    result = await db.execute(
-        query.order_by(Supplier.supplier_code).offset(skip).limit(limit)
-    )
-    suppliers = result.scalars().all()
+    query = query.order_by(Supplier.supplier_code)
+    total, suppliers = await paginate(db, query, skip, limit)
 
     return SupplierListResponse(total=total, items=suppliers)
 
