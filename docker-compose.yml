@@ -60,6 +60,9 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        VITE_AZURE_CLIENT_ID: ${AZURE_CLIENT_ID:-}
+        VITE_AZURE_TENANT_ID: ${AZURE_TENANT_ID:-}
     ports:
       - "3001:3000"
     depends_on:

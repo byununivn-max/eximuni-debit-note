@@ -1,9 +1,16 @@
 import logging
+import os
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.exc import IntegrityError
 
 from app.core.config import settings
+from app.middleware.request_logging import RequestLoggingMiddleware
+from app.middleware.exception_handler import (
+    integrity_error_handler,
+    unhandled_exception_handler,
+)
 from app.api.health import router as health_router
 from app.api.auth import router as auth_router
 from app.api.clients import router as clients_router
@@ -40,14 +47,24 @@ app = FastAPI(
     debug=settings.DEBUG,
 )
 
+_origins = os.getenv(
+    "ALLOWED_ORIGINS",
+    "http://localhost:3000,http://localhost:3001,http://localhost:5173",
+)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001"],
+    allow_origins=_origins.split(","),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["Content-Disposition"],
+    expose_headers=["Content-Disposition", "X-Request-ID"],
 )
+
+# 요청 로깅 미들웨어 + 글로벌 에러 핸들러
+app.add_middleware(RequestLoggingMiddleware)
+app.add_exception_handler(IntegrityError, integrity_error_handler)
+app.add_exception_handler(Exception, unhandled_exception_handler)
 
 # API Routers
 app.include_router(health_router, prefix="/api", tags=["health"])
