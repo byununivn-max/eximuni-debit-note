@@ -17,7 +17,7 @@ class MssqlMeetingSchedule(MSSQLBase):
     location = Column(Text, nullable=True)
     description = Column(Text, nullable=True)
     note = Column(Text, nullable=True)
-    status = Column(String(40), nullable=True)
+    status = Column(String(20), nullable=True)
     outlook_event_id = Column(Text, nullable=True)
     outlook_event_web_link = Column(Text, nullable=True)
     outlook_event_ical_uid = Column(Text, nullable=True)

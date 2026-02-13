@@ -8,6 +8,7 @@ import {
   FileTextOutlined, ReloadOutlined,
   ArrowUpOutlined, ArrowDownOutlined,
 } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 
 const { Title, Text } = Typography;
@@ -18,13 +19,9 @@ const fmtNum = (v: number) => {
   return Math.round(v).toLocaleString();
 };
 
-const MONTH_LABELS = [
-  '', '1월', '2월', '3월', '4월', '5월', '6월',
-  '7월', '8월', '9월', '10월', '11월', '12월',
-];
-
 /** 대차대조표 탭 */
 const BalanceSheetTab: React.FC = () => {
+  const { t } = useTranslation(['accounting', 'common']);
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<any>(null);
   const [year, setYear] = useState(new Date().getFullYear());
@@ -38,20 +35,20 @@ const BalanceSheetTab: React.FC = () => {
       });
       setData(res.data);
     } catch (err) {
-      message.error('대차대조표 조회 실패');
+      message.error(t('accounting:financialReports.bsFetchFailed'));
     } finally {
       setLoading(false);
     }
   };
 
   const detailColumns = [
-    { title: '계정코드', dataIndex: 'account_code', key: 'code', width: 120 },
+    { title: t('accounting:financialReports.columnAccountCode'), dataIndex: 'account_code', key: 'code', width: 120 },
     {
-      title: '계정명', dataIndex: 'account_name', key: 'name',
+      title: t('accounting:financialReports.columnAccountName'), dataIndex: 'account_name', key: 'name',
       ellipsis: true,
     },
     {
-      title: '금액', dataIndex: 'amount', key: 'amt',
+      title: t('accounting:financialReports.columnAmount'), dataIndex: 'amount', key: 'amt',
       width: 150, align: 'right' as const,
       render: (v: number, r: any) => (
         <Text style={{
@@ -77,11 +74,11 @@ const BalanceSheetTab: React.FC = () => {
           onChange={setMonth}
           style={{ width: 90 }}
           options={Array.from({ length: 12 }, (_, i) => ({
-            value: i + 1, label: MONTH_LABELS[i + 1],
+            value: i + 1, label: t(`common:month.${i + 1}`),
           }))}
         />
         <Button type="primary" icon={<ReloadOutlined />} onClick={fetch} loading={loading}>
-          조회
+          {t('common:button.query')}
         </Button>
       </Space>
 
@@ -91,7 +88,7 @@ const BalanceSheetTab: React.FC = () => {
             <Col span={8}>
               <Card size="small">
                 <Statistic
-                  title="총 자산"
+                  title={t('accounting:financialReports.totalAssets')}
                   value={data.assets.total_assets}
                   precision={0}
                   formatter={(val) => fmtNum(Number(val))}
@@ -101,7 +98,7 @@ const BalanceSheetTab: React.FC = () => {
             <Col span={8}>
               <Card size="small">
                 <Statistic
-                  title="총 부채"
+                  title={t('accounting:financialReports.totalLiabilities')}
                   value={data.liabilities.total_liabilities}
                   precision={0}
                   formatter={(val) => fmtNum(Number(val))}
@@ -112,7 +109,7 @@ const BalanceSheetTab: React.FC = () => {
             <Col span={8}>
               <Card size="small">
                 <Statistic
-                  title="자본"
+                  title={t('accounting:financialReports.totalEquity')}
                   value={data.equity.total_equity}
                   precision={0}
                   formatter={(val) => fmtNum(Number(val))}
@@ -124,7 +121,7 @@ const BalanceSheetTab: React.FC = () => {
 
           {data.balance_check !== 0 && (
             <Tag color="red" style={{ marginBottom: 16 }}>
-              균형 차이: {fmtNum(data.balance_check)} (자산 - 부채 - 자본)
+              {t('accounting:financialReports.balanceCheck', { amount: fmtNum(data.balance_check) })}
             </Tag>
           )}
 
@@ -133,14 +130,14 @@ const BalanceSheetTab: React.FC = () => {
             items={[
               {
                 key: 'assets',
-                label: `자산 (${fmtNum(data.assets.total_assets)})`,
+                label: t('accounting:financialReports.assets', { amount: fmtNum(data.assets.total_assets) }),
                 children: (
                   <div>
                     <Descriptions size="small" bordered column={2}>
-                      <Descriptions.Item label="유동자산">
+                      <Descriptions.Item label={t('accounting:financialReports.currentAssets')}>
                         {fmtNum(data.assets.current_assets)}
                       </Descriptions.Item>
-                      <Descriptions.Item label="비유동자산">
+                      <Descriptions.Item label={t('accounting:financialReports.noncurrentAssets')}>
                         {fmtNum(data.assets.noncurrent_assets)}
                       </Descriptions.Item>
                     </Descriptions>
@@ -157,14 +154,14 @@ const BalanceSheetTab: React.FC = () => {
               },
               {
                 key: 'liabilities',
-                label: `부채 (${fmtNum(data.liabilities.total_liabilities)})`,
+                label: t('accounting:financialReports.liabilities', { amount: fmtNum(data.liabilities.total_liabilities) }),
                 children: (
                   <div>
                     <Descriptions size="small" bordered column={2}>
-                      <Descriptions.Item label="유동부채">
+                      <Descriptions.Item label={t('accounting:financialReports.currentLiabilities')}>
                         {fmtNum(data.liabilities.current_liabilities)}
                       </Descriptions.Item>
-                      <Descriptions.Item label="비유동부채">
+                      <Descriptions.Item label={t('accounting:financialReports.noncurrentLiabilities')}>
                         {fmtNum(data.liabilities.noncurrent_liabilities)}
                       </Descriptions.Item>
                     </Descriptions>
@@ -181,7 +178,7 @@ const BalanceSheetTab: React.FC = () => {
               },
               {
                 key: 'equity',
-                label: `자본 (${fmtNum(data.equity.total_equity)})`,
+                label: t('accounting:financialReports.equity', { amount: fmtNum(data.equity.total_equity) }),
                 children: (
                   <Table
                     columns={detailColumns}
@@ -202,6 +199,7 @@ const BalanceSheetTab: React.FC = () => {
 
 /** 손익계산서 탭 */
 const IncomeStatementTab: React.FC = () => {
+  const { t } = useTranslation(['accounting', 'common']);
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<any>(null);
   const [year, setYear] = useState(new Date().getFullYear());
@@ -215,7 +213,7 @@ const IncomeStatementTab: React.FC = () => {
       const res = await api.get('/api/v1/reports/income-statement', { params });
       setData(res.data);
     } catch (err) {
-      message.error('손익계산서 조회 실패');
+      message.error(t('accounting:financialReports.isFetchFailed'));
     } finally {
       setLoading(false);
     }
@@ -234,14 +232,14 @@ const IncomeStatementTab: React.FC = () => {
           value={month}
           onChange={setMonth}
           allowClear
-          placeholder="누적"
+          placeholder={t('accounting:financialReports.cumulative')}
           style={{ width: 90 }}
           options={Array.from({ length: 12 }, (_, i) => ({
-            value: i + 1, label: MONTH_LABELS[i + 1],
+            value: i + 1, label: t(`common:month.${i + 1}`),
           }))}
         />
         <Button type="primary" icon={<ReloadOutlined />} onClick={fetch} loading={loading}>
-          조회
+          {t('common:button.query')}
         </Button>
       </Space>
 
@@ -251,7 +249,7 @@ const IncomeStatementTab: React.FC = () => {
             <Col span={6}>
               <Card size="small">
                 <Statistic
-                  title="순매출"
+                  title={t('accounting:financialReports.netRevenue')}
                   value={data.revenue.net_revenue}
                   precision={0}
                   formatter={(val) => fmtNum(Number(val))}
@@ -261,7 +259,7 @@ const IncomeStatementTab: React.FC = () => {
             <Col span={6}>
               <Card size="small">
                 <Statistic
-                  title="매출총이익"
+                  title={t('accounting:financialReports.grossProfit')}
                   value={data.gross_profit}
                   precision={0}
                   formatter={(val) => fmtNum(Number(val))}
@@ -272,7 +270,7 @@ const IncomeStatementTab: React.FC = () => {
             <Col span={6}>
               <Card size="small">
                 <Statistic
-                  title="영업이익"
+                  title={t('accounting:financialReports.operatingProfit')}
                   value={data.operating_profit}
                   precision={0}
                   formatter={(val) => fmtNum(Number(val))}
@@ -283,7 +281,7 @@ const IncomeStatementTab: React.FC = () => {
             <Col span={6}>
               <Card size="small">
                 <Statistic
-                  title="순이익"
+                  title={t('accounting:financialReports.netProfit')}
                   value={data.net_profit}
                   precision={0}
                   formatter={(val) => fmtNum(Number(val))}
@@ -294,59 +292,59 @@ const IncomeStatementTab: React.FC = () => {
             </Col>
           </Row>
 
-          <Card size="small" title={`${data.period} 손익계산서`}>
+          <Card size="small" title={t('accounting:financialReports.incomeStatementTitle', { period: data.period })}>
             <Descriptions bordered column={2} size="small">
-              <Descriptions.Item label="총매출" span={1}>
+              <Descriptions.Item label={t('accounting:financialReports.grossRevenue')} span={1}>
                 {fmtNum(data.revenue.gross_revenue)}
               </Descriptions.Item>
-              <Descriptions.Item label="매출차감" span={1}>
+              <Descriptions.Item label={t('accounting:financialReports.deductions')} span={1}>
                 <Text type="danger">{fmtNum(data.revenue.deductions)}</Text>
               </Descriptions.Item>
-              <Descriptions.Item label="순매출" span={2}>
+              <Descriptions.Item label={t('accounting:financialReports.netRevenue')} span={2}>
                 <Text strong>{fmtNum(data.revenue.net_revenue)}</Text>
               </Descriptions.Item>
-              <Descriptions.Item label="매출원가" span={2}>
+              <Descriptions.Item label={t('accounting:financialReports.cogs')} span={2}>
                 <Text type="danger">{fmtNum(data.cogs)}</Text>
               </Descriptions.Item>
-              <Descriptions.Item label="매출총이익" span={2}>
+              <Descriptions.Item label={t('accounting:financialReports.grossProfit')} span={2}>
                 <Text strong style={{
                   color: data.gross_profit >= 0 ? '#3f8600' : '#cf1322',
                 }}>
                   {fmtNum(data.gross_profit)}
                 </Text>
               </Descriptions.Item>
-              <Descriptions.Item label="판매비">
+              <Descriptions.Item label={t('accounting:financialReports.sellingExpenses')}>
                 {fmtNum(data.operating_expenses.selling)}
               </Descriptions.Item>
-              <Descriptions.Item label="관리비">
+              <Descriptions.Item label={t('accounting:financialReports.adminExpenses')}>
                 {fmtNum(data.operating_expenses.admin)}
               </Descriptions.Item>
-              <Descriptions.Item label="영업이익" span={2}>
+              <Descriptions.Item label={t('accounting:financialReports.operatingProfit')} span={2}>
                 <Text strong style={{
                   color: data.operating_profit >= 0 ? '#3f8600' : '#cf1322',
                 }}>
                   {fmtNum(data.operating_profit)}
                 </Text>
               </Descriptions.Item>
-              <Descriptions.Item label="금융수익">
+              <Descriptions.Item label={t('accounting:financialReports.financialIncome')}>
                 {fmtNum(data.financial.income)}
               </Descriptions.Item>
-              <Descriptions.Item label="금융비용">
+              <Descriptions.Item label={t('accounting:financialReports.financialExpense')}>
                 <Text type="danger">{fmtNum(data.financial.expense)}</Text>
               </Descriptions.Item>
-              <Descriptions.Item label="기타수익">
+              <Descriptions.Item label={t('accounting:financialReports.otherIncome')}>
                 {fmtNum(data.other.income)}
               </Descriptions.Item>
-              <Descriptions.Item label="기타비용">
+              <Descriptions.Item label={t('accounting:financialReports.otherExpense')}>
                 <Text type="danger">{fmtNum(data.other.expense)}</Text>
               </Descriptions.Item>
-              <Descriptions.Item label="세전이익" span={2}>
+              <Descriptions.Item label={t('accounting:financialReports.profitBeforeTax')} span={2}>
                 {fmtNum(data.profit_before_tax)}
               </Descriptions.Item>
-              <Descriptions.Item label="법인세" span={2}>
+              <Descriptions.Item label={t('accounting:financialReports.incomeTax')} span={2}>
                 <Text type="danger">{fmtNum(data.income_tax)}</Text>
               </Descriptions.Item>
-              <Descriptions.Item label="순이익" span={2}>
+              <Descriptions.Item label={t('accounting:financialReports.netProfit')} span={2}>
                 <Text strong style={{
                   fontSize: 16,
                   color: data.net_profit >= 0 ? '#3f8600' : '#cf1322',
@@ -364,6 +362,7 @@ const IncomeStatementTab: React.FC = () => {
 
 /** AR/AP 연령분석 탭 */
 const AgingTab: React.FC<{ type: 'ar' | 'ap' }> = ({ type }) => {
+  const { t } = useTranslation(['accounting', 'common']);
   const [loading, setLoading] = useState(false);
   const [items, setItems] = useState<any[]>([]);
   const [year, setYear] = useState(new Date().getFullYear());
@@ -378,7 +377,7 @@ const AgingTab: React.FC<{ type: 'ar' | 'ap' }> = ({ type }) => {
       });
       setItems(res.data);
     } catch (err) {
-      message.error(`${type.toUpperCase()} 연령분석 조회 실패`);
+      message.error(t('accounting:financialReports.agingFetchFailed', { type: type.toUpperCase() }));
     } finally {
       setLoading(false);
     }
@@ -396,17 +395,17 @@ const AgingTab: React.FC<{ type: 'ar' | 'ap' }> = ({ type }) => {
       render: (_: any, __: any, idx: number) => idx + 1,
     },
     {
-      title: isAR ? '사업자번호' : '사업자번호',
+      title: t('accounting:financialReports.taxId'),
       dataIndex: idField, key: 'id', width: 140,
     },
     {
-      title: isAR ? '고객명' : '공급사명',
+      title: isAR ? t('accounting:financialReports.customerName') : t('accounting:financialReports.vendorName'),
       dataIndex: nameField, key: 'name',
       ellipsis: true, width: 200,
       render: (v: string) => <Text strong>{v}</Text>,
     },
     {
-      title: isAR ? '매출채권' : '매입채무',
+      title: isAR ? t('accounting:financialReports.arReceivable') : t('accounting:financialReports.apPayable'),
       dataIndex: amtField, key: 'amt',
       width: 160, align: 'right' as const,
       render: (v: number) => (
@@ -434,23 +433,25 @@ const AgingTab: React.FC<{ type: 'ar' | 'ap' }> = ({ type }) => {
           onChange={setMonth}
           style={{ width: 90 }}
           options={Array.from({ length: 12 }, (_, i) => ({
-            value: i + 1, label: MONTH_LABELS[i + 1],
+            value: i + 1, label: t(`common:month.${i + 1}`),
           }))}
         />
         <Button type="primary" icon={<ReloadOutlined />} onClick={fetch} loading={loading}>
-          조회
+          {t('common:button.query')}
         </Button>
       </Space>
 
       {items.length > 0 && (
         <Card
           size="small"
-          title={`${isAR ? 'AR 매출채권' : 'AP 매입채무'} (${items.length}건)`}
+          title={isAR
+            ? t('accounting:financialReports.arTitle', { count: items.length })
+            : t('accounting:financialReports.apTitle', { count: items.length })}
           extra={
             <Text strong style={{
               color: isAR ? '#3f8600' : '#cf1322',
             }}>
-              합계: {fmtNum(total)}
+              {t('common:table.total')}: {fmtNum(total)}
             </Text>
           }
         >
@@ -470,6 +471,7 @@ const AgingTab: React.FC<{ type: 'ar' | 'ap' }> = ({ type }) => {
 
 /** GL 원장 탭 */
 const GLDetailTab: React.FC = () => {
+  const { t } = useTranslation(['accounting', 'common']);
   const [loading, setLoading] = useState(false);
   const [items, setItems] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
@@ -490,7 +492,7 @@ const GLDetailTab: React.FC = () => {
       setItems(res.data.items);
       setTotal(res.data.total);
     } catch (err) {
-      message.error('계정별 원장 조회 실패');
+      message.error(t('accounting:financialReports.glFetchFailed'));
     } finally {
       setLoading(false);
     }
@@ -498,37 +500,37 @@ const GLDetailTab: React.FC = () => {
 
   const columns = [
     {
-      title: '전표번호', dataIndex: 'entry_number', key: 'num',
+      title: t('accounting:financialReports.columnEntryNumber'), dataIndex: 'entry_number', key: 'num',
       width: 130,
     },
     {
-      title: '일자', dataIndex: 'entry_date', key: 'date',
+      title: t('accounting:financialReports.columnDate'), dataIndex: 'entry_date', key: 'date',
       width: 100,
     },
     {
-      title: '모듈', dataIndex: 'module', key: 'mod',
+      title: t('accounting:financialReports.columnModule'), dataIndex: 'module', key: 'mod',
       width: 60, align: 'center' as const,
       render: (v: string) => <Tag>{v}</Tag>,
     },
     {
-      title: '계정', dataIndex: 'account_code', key: 'acct',
+      title: t('accounting:financialReports.columnAccount'), dataIndex: 'account_code', key: 'acct',
       width: 90,
     },
     {
-      title: '상대계정', dataIndex: 'counter_account', key: 'counter',
+      title: t('accounting:financialReports.columnCounterAccount'), dataIndex: 'counter_account', key: 'counter',
       width: 90,
     },
     {
-      title: '적요', dataIndex: 'description', key: 'desc',
+      title: t('accounting:financialReports.columnDescription'), dataIndex: 'description', key: 'desc',
       ellipsis: true,
     },
     {
-      title: '차변', dataIndex: 'debit', key: 'dr',
+      title: t('accounting:financialReports.columnDebit'), dataIndex: 'debit', key: 'dr',
       width: 140, align: 'right' as const,
       render: (v: number) => v ? fmtNum(v) : '-',
     },
     {
-      title: '대변', dataIndex: 'credit', key: 'cr',
+      title: t('accounting:financialReports.columnCredit'), dataIndex: 'credit', key: 'cr',
       width: 140, align: 'right' as const,
       render: (v: number) => v ? (
         <Text type="danger">{fmtNum(v)}</Text>
@@ -549,24 +551,24 @@ const GLDetailTab: React.FC = () => {
           value={month}
           onChange={v => { setMonth(v); setPage(1); }}
           allowClear
-          placeholder="월"
+          placeholder={t('common:filter.month')}
           style={{ width: 90 }}
           options={Array.from({ length: 12 }, (_, i) => ({
-            value: i + 1, label: MONTH_LABELS[i + 1],
+            value: i + 1, label: t(`common:month.${i + 1}`),
           }))}
         />
         <Input
-          placeholder="계정코드"
+          placeholder={t('accounting:financialReports.accountCodePlaceholder')}
           value={accountCode}
           onChange={e => setAccountCode(e.target.value)}
           style={{ width: 120 }}
         />
         <Button type="primary" icon={<ReloadOutlined />} onClick={fetch} loading={loading}>
-          조회
+          {t('common:button.query')}
         </Button>
       </Space>
 
-      <Card size="small" title={`계정별 원장 (${total}건)`}>
+      <Card size="small" title={t('accounting:financialReports.glTitle', { count: total })}>
         <Table
           columns={columns}
           dataSource={items}
@@ -577,7 +579,7 @@ const GLDetailTab: React.FC = () => {
             total,
             pageSize: 100,
             onChange: p => { setPage(p); fetch(); },
-            showTotal: t => `전체 ${t}건`,
+            showTotal: (total) => t('common:pagination.totalAll', { count: total }),
           }}
           scroll={{ x: 1100 }}
           loading={loading}
@@ -588,11 +590,13 @@ const GLDetailTab: React.FC = () => {
 };
 
 const FinancialReportsPage: React.FC = () => {
+  const { t } = useTranslation(['accounting', 'common']);
+
   return (
     <div>
       <Title level={4} style={{ marginBottom: 16 }}>
         <FileTextOutlined style={{ marginRight: 8 }} />
-        재무제표 (SmartBooks VAS 형식)
+        {t('accounting:financialReports.title')}
       </Title>
 
       <Tabs
@@ -600,27 +604,27 @@ const FinancialReportsPage: React.FC = () => {
         items={[
           {
             key: 'bs',
-            label: 'B01 대차대조표',
+            label: t('accounting:financialReports.balanceSheet'),
             children: <BalanceSheetTab />,
           },
           {
             key: 'is',
-            label: 'B02 손익계산서',
+            label: t('accounting:financialReports.incomeStatement'),
             children: <IncomeStatementTab />,
           },
           {
             key: 'gl',
-            label: '계정별 원장',
+            label: t('accounting:financialReports.glDetail'),
             children: <GLDetailTab />,
           },
           {
             key: 'ar',
-            label: 'AR 연령분석',
+            label: t('accounting:financialReports.arAging'),
             children: <AgingTab type="ar" />,
           },
           {
             key: 'ap',
-            label: 'AP 연령분석',
+            label: t('accounting:financialReports.apAging'),
             children: <AgingTab type="ap" />,
           },
         ]}

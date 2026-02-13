@@ -8,6 +8,7 @@ import {
   SendOutlined, EyeOutlined, HistoryOutlined, FileExcelOutlined,
   DownloadOutlined,
 } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 import type { DebitNote, Client, ExchangeRate, WorkflowEntry } from '../types';
 import { useAuth } from '../contexts/AuthContext';
@@ -16,6 +17,7 @@ const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
 
 const DebitNotesPage: React.FC = () => {
+  const { t } = useTranslation(['trading', 'common']);
   const [debitNotes, setDebitNotes] = useState<DebitNote[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
@@ -43,7 +45,7 @@ const DebitNotesPage: React.FC = () => {
         setLatestRate(Number(rRes.data.rate));
       } catch { /* 환율 조회 실패 시 기본값 유지 */ }
     } catch (err: any) {
-      message.error(err.response?.data?.detail || '데이터 조회 실패');
+      message.error(err.response?.data?.detail || t('trading:debitNotes.fetchFailed'));
     } finally {
       setLoading(false);
     }
@@ -63,23 +65,23 @@ const DebitNotesPage: React.FC = () => {
         notes: values.notes,
       };
       await api.post('/api/v1/debit-notes', payload);
-      message.success('Debit Note 생성 완료');
+      message.success(t('common:message.createSuccess'));
       setCreateModal(false);
       form.resetFields();
       fetchData();
     } catch (err: any) {
-      message.error(err.response?.data?.detail || '생성 실패');
+      message.error(err.response?.data?.detail || t('common:message.createFailed'));
     }
   };
 
   const handleAction = async (id: number, action: string, comment?: string) => {
     try {
       await api.post(`/api/v1/debit-notes/${id}/${action}`, { comment });
-      message.success(`${action} 완료`);
+      message.success(`${action} ${t('common:message.success')}`);
       fetchData();
       setDetailModal(false);
     } catch (err: any) {
-      message.error(err.response?.data?.detail || '처리 실패');
+      message.error(err.response?.data?.detail || t('common:message.failed'));
     }
   };
 
@@ -89,7 +91,7 @@ const DebitNotesPage: React.FC = () => {
       setSelectedDN(res.data);
       setDetailModal(true);
     } catch {
-      message.error('상세 조회 실패');
+      message.error(t('common:message.fetchFailed'));
     }
   };
 
@@ -100,7 +102,7 @@ const DebitNotesPage: React.FC = () => {
       setSelectedDN(dn);
       setHistoryModal(true);
     } catch {
-      message.error('이력 조회 실패');
+      message.error(t('common:message.fetchFailed'));
     }
   };
 
@@ -128,7 +130,7 @@ const DebitNotesPage: React.FC = () => {
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
-      message.success('Excel 다운로드 완료');
+      message.success(t('common:message.exportSuccess'));
       fetchData(); // 상태 갱신 (EXPORTED)
     } catch (err: any) {
       // blob 응답에서 에러 시 JSON 파싱
@@ -136,10 +138,10 @@ const DebitNotesPage: React.FC = () => {
         try {
           const text = await err.response.data.text();
           const json = JSON.parse(text);
-          message.error(json.detail || 'Excel 출력 실패');
-        } catch { message.error('Excel 출력 실패'); }
+          message.error(json.detail || t('common:message.exportFailed'));
+        } catch { message.error(t('common:message.exportFailed')); }
       } else {
-        message.error(err.response?.data?.detail || 'Excel 출력 실패');
+        message.error(err.response?.data?.detail || t('common:message.exportFailed'));
       }
     } finally {
       setExporting(null);
@@ -154,28 +156,28 @@ const DebitNotesPage: React.FC = () => {
   };
 
   const columns = [
-    { title: 'DN 번호', dataIndex: 'debit_note_number', key: 'number', width: 170 },
-    { title: '거래처', key: 'client', width: 120,
+    { title: t('trading:debitNotes.columnDnNumber'), dataIndex: 'debit_note_number', key: 'number', width: 170 },
+    { title: t('trading:debitNotes.columnClient'), key: 'client', width: 120,
       render: (_: any, r: DebitNote) => clientName(r.client_id),
     },
-    { title: '기간', key: 'period', width: 200,
+    { title: t('trading:debitNotes.columnPeriod'), key: 'period', width: 200,
       render: (_: any, r: DebitNote) => `${r.period_from} ~ ${r.period_to}`,
     },
-    { title: '건수', dataIndex: 'total_lines', key: 'lines', width: 60, align: 'center' as const },
-    { title: 'USD', dataIndex: 'total_usd', key: 'usd', width: 120, align: 'right' as const,
+    { title: t('trading:debitNotes.columnLines'), dataIndex: 'total_lines', key: 'lines', width: 60, align: 'center' as const },
+    { title: t('trading:debitNotes.columnUsd'), dataIndex: 'total_usd', key: 'usd', width: 120, align: 'right' as const,
       render: (v: number) => Number(v).toLocaleString(undefined, { minimumFractionDigits: 2 }),
     },
-    { title: 'VND (합계)', dataIndex: 'grand_total_vnd', key: 'vnd', width: 150, align: 'right' as const,
+    { title: t('trading:debitNotes.columnVndTotal'), dataIndex: 'grand_total_vnd', key: 'vnd', width: 150, align: 'right' as const,
       render: (v: number) => Number(v).toLocaleString(),
     },
-    { title: '상태', dataIndex: 'status', key: 'status', width: 140,
+    { title: t('trading:debitNotes.columnStatus'), dataIndex: 'status', key: 'status', width: 140,
       render: (s: string) => <Tag color={statusColor[s]}>{s}</Tag>,
     },
-    { title: '액션', key: 'action', width: 280,
+    { title: t('trading:debitNotes.columnAction'), key: 'action', width: 280,
       render: (_: any, r: DebitNote) => (
         <Space size="small">
-          <Button size="small" icon={<EyeOutlined />} onClick={() => showDetail(r)}>상세</Button>
-          <Button size="small" icon={<HistoryOutlined />} onClick={() => showHistory(r)}>이력</Button>
+          <Button size="small" icon={<EyeOutlined />} onClick={() => showDetail(r)}>{t('common:button.detail')}</Button>
+          <Button size="small" icon={<HistoryOutlined />} onClick={() => showHistory(r)}>{t('trading:debitNotes.historyTitle')}</Button>
           {(r.status === 'APPROVED' || r.status === 'EXPORTED') && (
             <Button size="small" type="primary" icon={<FileExcelOutlined />}
               loading={exporting === r.debit_note_id}
@@ -192,13 +194,13 @@ const DebitNotesPage: React.FC = () => {
   return (
     <div>
       <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 16 }}>
-        <Title level={4} style={{ margin: 0 }}>Debit Note</Title>
+        <Title level={4} style={{ margin: 0 }}>{t('trading:debitNotes.title')}</Title>
         <Button type="primary" icon={<PlusOutlined />} onClick={() => {
           form.resetFields();
           form.setFieldsValue({ exchange_rate: latestRate, sheet_type: 'ALL' });
           setCreateModal(true);
         }}>
-          Debit Note 생성
+          {t('trading:debitNotes.createButton')}
         </Button>
       </Space>
 
@@ -208,51 +210,51 @@ const DebitNotesPage: React.FC = () => {
       </Card>
 
       {/* 생성 모달 */}
-      <Modal title="Debit Note 생성" open={createModal} onOk={handleCreate}
-        onCancel={() => setCreateModal(false)} okText="생성" cancelText="취소" width={500}>
+      <Modal title={t('trading:debitNotes.createTitle')} open={createModal} onOk={handleCreate}
+        onCancel={() => setCreateModal(false)} okText={t('common:button.create')} cancelText={t('common:button.cancel')} width={500}>
         <Form form={form} layout="vertical">
-          <Form.Item name="client_id" label="거래처" rules={[{ required: true }]}>
+          <Form.Item name="client_id" label={t('trading:debitNotes.formClient')} rules={[{ required: true }]}>
             <Select options={clients.map(c => ({ value: c.client_id, label: `${c.client_code} - ${c.client_name}` }))} />
           </Form.Item>
-          <Form.Item name="period" label="청구 기간" rules={[{ required: true }]}>
+          <Form.Item name="period" label={t('trading:debitNotes.formPeriod')} rules={[{ required: true }]}>
             <RangePicker style={{ width: '100%' }} />
           </Form.Item>
-          <Form.Item name="exchange_rate" label="환율 (VND/USD)" rules={[{ required: true }]}>
+          <Form.Item name="exchange_rate" label={t('trading:debitNotes.formExchangeRate')} rules={[{ required: true }]}>
             <InputNumber style={{ width: '100%' }} min={1} formatter={(v) => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} />
           </Form.Item>
-          <Form.Item name="sheet_type" label="시트 유형">
+          <Form.Item name="sheet_type" label={t('trading:debitNotes.formSheetType')}>
             <Select options={[
-              { value: 'ALL', label: '전체 (IMPORT + EXPORT)' },
+              { value: 'ALL', label: t('trading:debitNotes.sheetAll') },
               { value: 'IMPORT', label: 'IMPORT' },
               { value: 'EXPORT', label: 'EXPORT' },
             ]} />
           </Form.Item>
-          <Form.Item name="notes" label="메모">
+          <Form.Item name="notes" label={t('trading:debitNotes.formMemo')}>
             <Input.TextArea rows={2} />
           </Form.Item>
         </Form>
       </Modal>
 
       {/* 상세 모달 */}
-      <Modal title={`Debit Note 상세 - ${selectedDN?.debit_note_number}`}
+      <Modal title={`${t('trading:debitNotes.detailTitle')} - ${selectedDN?.debit_note_number}`}
         open={detailModal} onCancel={() => setDetailModal(false)} footer={null} width={900}>
         {selectedDN && (
           <div>
             <Descriptions bordered size="small" column={2}>
-              <Descriptions.Item label="DN 번호">{selectedDN.debit_note_number}</Descriptions.Item>
-              <Descriptions.Item label="거래처">{clientName(selectedDN.client_id)}</Descriptions.Item>
-              <Descriptions.Item label="기간">{selectedDN.period_from} ~ {selectedDN.period_to}</Descriptions.Item>
-              <Descriptions.Item label="환율">{Number(selectedDN.exchange_rate).toLocaleString()} VND</Descriptions.Item>
-              <Descriptions.Item label="USD 합계">{Number(selectedDN.total_usd).toLocaleString(undefined, { minimumFractionDigits: 2 })}</Descriptions.Item>
-              <Descriptions.Item label="VND 합계">{Number(selectedDN.total_vnd).toLocaleString()}</Descriptions.Item>
-              <Descriptions.Item label="VAT">{Number(selectedDN.total_vat).toLocaleString()}</Descriptions.Item>
-              <Descriptions.Item label="최종 합계">{Number(selectedDN.grand_total_vnd).toLocaleString()} VND</Descriptions.Item>
-              <Descriptions.Item label="상태" span={2}>
+              <Descriptions.Item label={t('trading:debitNotes.descDnNumber')}>{selectedDN.debit_note_number}</Descriptions.Item>
+              <Descriptions.Item label={t('trading:debitNotes.descClient')}>{clientName(selectedDN.client_id)}</Descriptions.Item>
+              <Descriptions.Item label={t('trading:debitNotes.descPeriod')}>{selectedDN.period_from} ~ {selectedDN.period_to}</Descriptions.Item>
+              <Descriptions.Item label={t('trading:debitNotes.descExchangeRate')}>{Number(selectedDN.exchange_rate).toLocaleString()} VND</Descriptions.Item>
+              <Descriptions.Item label={t('trading:debitNotes.descUsdTotal')}>{Number(selectedDN.total_usd).toLocaleString(undefined, { minimumFractionDigits: 2 })}</Descriptions.Item>
+              <Descriptions.Item label={t('trading:debitNotes.descVndTotal')}>{Number(selectedDN.total_vnd).toLocaleString()}</Descriptions.Item>
+              <Descriptions.Item label={t('trading:debitNotes.descVat')}>{Number(selectedDN.total_vat).toLocaleString()}</Descriptions.Item>
+              <Descriptions.Item label={t('trading:debitNotes.descGrandTotal')}>{Number(selectedDN.grand_total_vnd).toLocaleString()} VND</Descriptions.Item>
+              <Descriptions.Item label={t('trading:debitNotes.descStatus')} span={2}>
                 <Tag color={statusColor[selectedDN.status]}>{selectedDN.status}</Tag>
               </Descriptions.Item>
             </Descriptions>
 
-            <Divider>라인 항목 ({selectedDN.lines.length}건)</Divider>
+            <Divider>{t('trading:debitNotes.lineItems', { count: selectedDN.lines.length })}</Divider>
             <Table
               dataSource={selectedDN.lines}
               rowKey="line_id"
@@ -285,29 +287,29 @@ const DebitNotesPage: React.FC = () => {
             <Divider />
             <Space>
               {selectedDN.status === 'DRAFT' && (
-                <Popconfirm title="검토 제출하시겠습니까?" onConfirm={() => handleAction(selectedDN.debit_note_id, 'submit-for-review')}>
-                  <Button type="primary" icon={<SendOutlined />}>검토 제출</Button>
+                <Popconfirm title={t('trading:debitNotes.submitConfirm')} onConfirm={() => handleAction(selectedDN.debit_note_id, 'submit-for-review')}>
+                  <Button type="primary" icon={<SendOutlined />}>{t('trading:debitNotes.submitReview')}</Button>
                 </Popconfirm>
               )}
               {selectedDN.status === 'PENDING_REVIEW' && selectedDN.created_by !== user?.user_id && (
                 <>
-                  <Popconfirm title="승인하시겠습니까?" onConfirm={() => handleAction(selectedDN.debit_note_id, 'approve', '승인')}>
-                    <Button type="primary" icon={<CheckCircleOutlined />} style={{ background: '#52c41a' }}>승인</Button>
+                  <Popconfirm title={t('trading:debitNotes.approveConfirm')} onConfirm={() => handleAction(selectedDN.debit_note_id, 'approve', t('common:button.approve'))}>
+                    <Button type="primary" icon={<CheckCircleOutlined />} style={{ background: '#52c41a' }}>{t('common:button.approve')}</Button>
                   </Popconfirm>
-                  <Popconfirm title="거절하시겠습니까?" onConfirm={() => handleAction(selectedDN.debit_note_id, 'reject', '거절')}>
-                    <Button danger icon={<CloseCircleOutlined />}>거절</Button>
+                  <Popconfirm title={t('trading:debitNotes.rejectConfirm')} onConfirm={() => handleAction(selectedDN.debit_note_id, 'reject', t('common:button.reject'))}>
+                    <Button danger icon={<CloseCircleOutlined />}>{t('common:button.reject')}</Button>
                   </Popconfirm>
                 </>
               )}
               {selectedDN.status === 'PENDING_REVIEW' && selectedDN.created_by === user?.user_id && (
-                <Text type="secondary">본인이 생성한 Debit Note는 다른 사용자가 승인해야 합니다.</Text>
+                <Text type="secondary">{t('trading:debitNotes.selfCreatedNote')}</Text>
               )}
               {(selectedDN.status === 'APPROVED' || selectedDN.status === 'EXPORTED') && (
                 <Button type="primary" icon={<DownloadOutlined />}
                   loading={exporting === selectedDN.debit_note_id}
                   onClick={() => handleExportExcel(selectedDN)}
                   style={{ background: '#217346' }}>
-                  Excel 다운로드
+                  {t('trading:debitNotes.excelDownload')}
                 </Button>
               )}
             </Space>
@@ -316,7 +318,7 @@ const DebitNotesPage: React.FC = () => {
       </Modal>
 
       {/* 이력 모달 */}
-      <Modal title={`워크플로우 이력 - ${selectedDN?.debit_note_number}`}
+      <Modal title={`${t('trading:debitNotes.historyTitle')} - ${selectedDN?.debit_note_number}`}
         open={historyModal} onCancel={() => setHistoryModal(false)} footer={null} width={500}>
         <Timeline items={workflows.map(w => ({
           color: w.action === 'APPROVED' ? 'green' : w.action === 'REJECTED' ? 'red' : 'blue',

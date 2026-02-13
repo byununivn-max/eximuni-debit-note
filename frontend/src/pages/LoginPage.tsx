@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Card, Form, Input, Button, Typography, message, Space, Divider } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { msalEnabled } from '../msalConfig';
@@ -9,6 +10,7 @@ import MsalLoginButton from '../components/MsalLoginButton';
 const { Title, Text } = Typography;
 
 const LoginPage: React.FC = () => {
+  const { t } = useTranslation(['analytics', 'common']);
   const [loading, setLoading] = useState(false);
   const { login, loginWithMsal } = useAuth();
   const navigate = useNavigate();
@@ -17,10 +19,10 @@ const LoginPage: React.FC = () => {
     setLoading(true);
     try {
       await login(values);
-      message.success('로그인 성공');
+      message.success(t('common:message.loginSuccess'));
       navigate('/');
     } catch (err: any) {
-      message.error(err.response?.data?.detail || '로그인 실패');
+      message.error(err.response?.data?.detail || t('common:message.loginFailed'));
     } finally {
       setLoading(false);
     }
@@ -29,15 +31,15 @@ const LoginPage: React.FC = () => {
   const handleMsalSuccess = async (accessToken: string) => {
     try {
       await loginWithMsal(accessToken);
-      message.success('Microsoft 로그인 성공');
+      message.success(t('analytics:login.msLoginSuccess'));
       navigate('/');
     } catch (err: any) {
-      message.error(err.response?.data?.detail || 'Microsoft 로그인 실패');
+      message.error(err.response?.data?.detail || t('analytics:login.msLoginFailed'));
     }
   };
 
   const handleMsalError = (error: Error) => {
-    message.error(error.message || 'Microsoft 로그인 실패');
+    message.error(error.message || t('analytics:login.msLoginFailed'));
   };
 
   return (
@@ -48,8 +50,8 @@ const LoginPage: React.FC = () => {
       <Card style={{ width: 420, borderRadius: 12 }} bordered={false}>
         <Space direction="vertical" size="large" style={{ width: '100%', textAlign: 'center' }}>
           <div>
-            <Title level={2} style={{ margin: 0 }}>EXIMUNI</Title>
-            <Text type="secondary">ERP System</Text>
+            <Title level={2} style={{ margin: 0 }}>{t('analytics:login.title')}</Title>
+            <Text type="secondary">{t('analytics:login.subtitle')}</Text>
           </div>
 
           {/* Microsoft SSO 로그인 (MSAL 활성화 시) */}
@@ -60,22 +62,22 @@ const LoginPage: React.FC = () => {
                 onError={handleMsalError}
               />
               <Divider plain>
-                <Text type="secondary" style={{ fontSize: 12 }}>또는 개발자 로그인</Text>
+                <Text type="secondary" style={{ fontSize: 12 }}>{t('analytics:login.orDeveloperLogin')}</Text>
               </Divider>
             </>
           )}
 
           {/* 기존 username/password 로그인 */}
           <Form layout="vertical" onFinish={onFinish} size="large">
-            <Form.Item name="username" rules={[{ required: true, message: '사용자명을 입력하세요' }]}>
-              <Input prefix={<UserOutlined />} placeholder="사용자명" />
+            <Form.Item name="username" rules={[{ required: true, message: t('analytics:login.usernameRequired') }]}>
+              <Input prefix={<UserOutlined />} placeholder={t('analytics:login.usernamePlaceholder')} />
             </Form.Item>
-            <Form.Item name="password" rules={[{ required: true, message: '비밀번호를 입력하세요' }]}>
-              <Input.Password prefix={<LockOutlined />} placeholder="비밀번호" />
+            <Form.Item name="password" rules={[{ required: true, message: t('analytics:login.passwordRequired') }]}>
+              <Input.Password prefix={<LockOutlined />} placeholder={t('analytics:login.passwordPlaceholder')} />
             </Form.Item>
             <Form.Item>
               <Button type={msalEnabled ? 'default' : 'primary'} htmlType="submit" loading={loading} block>
-                로그인
+                {t('common:button.login')}
               </Button>
             </Form.Item>
           </Form>

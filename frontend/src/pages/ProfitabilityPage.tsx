@@ -5,6 +5,7 @@ import {
 import {
   TrophyOutlined, ArrowUpOutlined, ArrowDownOutlined,
 } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 
 const { Title, Text } = Typography;
@@ -18,11 +19,6 @@ interface CustomerProfit {
   gp_margin: number;
 }
 
-const MONTH_LABELS = [
-  '', '1월', '2월', '3월', '4월', '5월', '6월',
-  '7월', '8월', '9월', '10월', '11월', '12월',
-];
-
 const fmtNum = (v: number) => {
   if (!v && v !== 0) return '-';
   if (v === 0) return '-';
@@ -30,6 +26,7 @@ const fmtNum = (v: number) => {
 };
 
 const ProfitabilityPage: React.FC = () => {
+  const { t } = useTranslation(['analytics', 'common']);
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState<CustomerProfit[]>([]);
   const [year, setYear] = useState<number | undefined>(new Date().getFullYear());
@@ -61,34 +58,34 @@ const ProfitabilityPage: React.FC = () => {
 
   const columns = [
     {
-      title: '#', key: 'rank', width: 50, fixed: 'left' as const,
+      title: t('analytics:profitability.columnRank'), key: 'rank', width: 50, fixed: 'left' as const,
       render: (_: any, __: any, idx: number) => (
         <Text strong>{idx + 1}</Text>
       ),
     },
     {
-      title: '고객명', dataIndex: 'customer_name', key: 'name',
+      title: t('analytics:profitability.columnCustomer'), dataIndex: 'customer_name', key: 'name',
       ellipsis: true, fixed: 'left' as const, width: 200,
       render: (v: string) => <Text strong>{v}</Text>,
     },
     {
-      title: '건수', dataIndex: 'deal_count', key: 'cnt',
+      title: t('analytics:profitability.columnCount'), dataIndex: 'deal_count', key: 'cnt',
       width: 70, align: 'center' as const,
     },
     {
-      title: '매출', dataIndex: 'total_selling', key: 'sell',
+      title: t('analytics:profitability.columnSelling'), dataIndex: 'total_selling', key: 'sell',
       width: 140, align: 'right' as const,
       render: fmtNum,
     },
     {
-      title: '매입', dataIndex: 'total_buying', key: 'buy',
+      title: t('analytics:profitability.columnBuying'), dataIndex: 'total_buying', key: 'buy',
       width: 140, align: 'right' as const,
       render: (v: number) => (
         <Text type="danger">{fmtNum(v)}</Text>
       ),
     },
     {
-      title: '매출총이익', dataIndex: 'gross_profit', key: 'gp',
+      title: t('analytics:profitability.columnGrossProfit'), dataIndex: 'gross_profit', key: 'gp',
       width: 140, align: 'right' as const,
       render: (v: number) => (
         <Text style={{ color: v >= 0 ? '#3f8600' : '#cf1322', fontWeight: 600 }}>
@@ -97,7 +94,7 @@ const ProfitabilityPage: React.FC = () => {
       ),
     },
     {
-      title: 'GP율', dataIndex: 'gp_margin', key: 'gpm',
+      title: t('analytics:profitability.columnGpRate'), dataIndex: 'gp_margin', key: 'gpm',
       width: 90, align: 'center' as const,
       render: (v: number) => (
         <Tag color={v >= 30 ? 'green' : v >= 15 ? 'orange' : v >= 0 ? 'default' : 'red'}>
@@ -117,7 +114,7 @@ const ProfitabilityPage: React.FC = () => {
         <Col>
           <Title level={4} style={{ margin: 0 }}>
             <TrophyOutlined style={{ marginRight: 8 }} />
-            고객별 수익성 분석
+            {t('analytics:profitability.title')}
           </Title>
         </Col>
         <Col>
@@ -126,7 +123,7 @@ const ProfitabilityPage: React.FC = () => {
               value={year}
               onChange={setYear}
               allowClear
-              placeholder="연도"
+              placeholder={t('common:filter.year')}
               style={{ width: 100 }}
               options={[2024, 2025, 2026].map(y => ({ value: y, label: String(y) }))}
             />
@@ -134,10 +131,10 @@ const ProfitabilityPage: React.FC = () => {
               value={month}
               onChange={setMonth}
               allowClear
-              placeholder="월"
+              placeholder={t('common:filter.month')}
               style={{ width: 90 }}
               options={Array.from({ length: 12 }, (_, i) => ({
-                value: i + 1, label: MONTH_LABELS[i + 1],
+                value: i + 1, label: t(`common:month.${i + 1}`),
               }))}
             />
           </Space>
@@ -147,18 +144,18 @@ const ProfitabilityPage: React.FC = () => {
       <Row gutter={16} style={{ marginBottom: 16 }}>
         <Col span={4}>
           <Card size="small">
-            <Statistic title="고객 수" value={items.length} suffix="개사" />
+            <Statistic title={t('analytics:profitability.customerCount')} value={items.length} suffix="개사" />
           </Card>
         </Col>
         <Col span={4}>
           <Card size="small">
-            <Statistic title="총 건수" value={totalDeals} suffix="건" />
+            <Statistic title={t('analytics:profitability.totalDeals')} value={totalDeals} suffix="건" />
           </Card>
         </Col>
         <Col span={4}>
           <Card size="small">
             <Statistic
-              title="총 매출"
+              title={t('analytics:profitability.totalSelling')}
               value={totalSelling}
               precision={0}
               formatter={(val) => fmtNum(Number(val))}
@@ -168,7 +165,7 @@ const ProfitabilityPage: React.FC = () => {
         <Col span={4}>
           <Card size="small">
             <Statistic
-              title="총 매입"
+              title={t('analytics:profitability.totalBuying')}
               value={totalBuying}
               precision={0}
               formatter={(val) => fmtNum(Number(val))}
@@ -179,7 +176,7 @@ const ProfitabilityPage: React.FC = () => {
         <Col span={4}>
           <Card size="small">
             <Statistic
-              title="총 GP"
+              title={t('analytics:profitability.totalGp')}
               value={totalGP}
               precision={0}
               formatter={(val) => fmtNum(Number(val))}
@@ -191,7 +188,7 @@ const ProfitabilityPage: React.FC = () => {
         <Col span={4}>
           <Card size="small">
             <Statistic
-              title="평균 GP율"
+              title={t('analytics:profitability.avgGpRate')}
               value={avgGPMargin}
               precision={1}
               suffix="%"
@@ -204,7 +201,7 @@ const ProfitabilityPage: React.FC = () => {
       </Row>
 
       <Card
-        title={`고객별 수익성 랭킹 (${items.length}개사)`}
+        title={t('analytics:profitability.rankingTitle', { count: items.length })}
         size="small"
       >
         <Table

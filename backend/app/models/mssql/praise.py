@@ -12,10 +12,10 @@ class MssqlPraise(MSSQLBase):
     full_name = Column(String(255), nullable=False)
     detail = Column(Text, nullable=False)
     title_post = Column(String(255), nullable=True)
-    from_channel = Column(String(200), nullable=True)
+    from_channel = Column(String(100), nullable=True)
     content = Column(Text, nullable=True)
     created_at = Column(DateTime, nullable=False)
-    message_id = Column(String(256), nullable=False)
+    message_id = Column(String(128), nullable=False)
 
 
 class MssqlReward(MSSQLBase):
@@ -34,6 +34,6 @@ class MssqlSummaryPoint(MSSQLBase):
     __table_args__ = {"schema": "dbo"}
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    title = Column(String(100), nullable=True)
+    title = Column(String(50), nullable=True)
     summary = Column(Integer, nullable=True)
     created_at = Column(DateTime, nullable=False)

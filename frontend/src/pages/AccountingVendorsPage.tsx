@@ -7,6 +7,7 @@ import {
   SearchOutlined, SyncOutlined, LinkOutlined,
   ShopOutlined,
 } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 
 const { Title } = Typography;
@@ -24,6 +25,7 @@ interface VendorItem {
 }
 
 const AccountingVendorsPage: React.FC = () => {
+  const { t } = useTranslation(['accounting', 'common']);
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState<VendorItem[]>([]);
   const [total, setTotal] = useState(0);
@@ -57,11 +59,11 @@ const AccountingVendorsPage: React.FC = () => {
     try {
       const res = await api.post('/api/v1/accounting-vendors/extract-from-journal');
       message.success(
-        `추출 완료: ${res.data.created}건 생성, ${res.data.skipped}건 스킵`,
+        t('common:message.importSuccess') + `: ${res.data.created}건 / ${res.data.skipped}건`,
       );
       fetchData();
     } catch (err: any) {
-      message.error(err.response?.data?.detail || '추출 실패');
+      message.error(err.response?.data?.detail || t('common:message.importFailed'));
     } finally {
       setExtracting(false);
     }
@@ -72,11 +74,11 @@ const AccountingVendorsPage: React.FC = () => {
     try {
       const res = await api.post('/api/v1/accounting-vendors/match-suppliers');
       message.success(
-        `매칭 완료: ${res.data.matched}건 매칭, ${res.data.unmatched}건 미매핑`,
+        t('common:message.syncSuccess') + `: ${res.data.matched}건 / ${res.data.unmatched}건`,
       );
       fetchData();
     } catch (err: any) {
-      message.error(err.response?.data?.detail || '매칭 실패');
+      message.error(err.response?.data?.detail || t('common:message.syncFailed'));
     } finally {
       setMatching(false);
     }
@@ -84,36 +86,36 @@ const AccountingVendorsPage: React.FC = () => {
 
   const columns = [
     {
-      title: '사업자번호', dataIndex: 'tax_id', key: 'tax',
+      title: t('accounting:vendors.columnTaxId'), dataIndex: 'tax_id', key: 'tax',
       width: 130, fixed: 'left' as const,
       render: (v: string) => <strong>{v}</strong>,
     },
     {
-      title: '공급사명 (VN)', dataIndex: 'vendor_name_vn', key: 'vn',
+      title: t('accounting:vendors.columnNameVn'), dataIndex: 'vendor_name_vn', key: 'vn',
       ellipsis: true,
     },
     {
-      title: '공급사명 (EN)', dataIndex: 'vendor_name_en', key: 'en',
+      title: t('accounting:vendors.columnNameEn'), dataIndex: 'vendor_name_en', key: 'en',
       ellipsis: true,
     },
     {
-      title: 'AP 계정', dataIndex: 'default_ap_account', key: 'ap',
+      title: t('accounting:vendors.columnApAccount'), dataIndex: 'default_ap_account', key: 'ap',
       width: 100, align: 'center' as const,
       render: (v: string) => <Tag>{v}</Tag>,
     },
     {
-      title: '통화', dataIndex: 'currency_code', key: 'ccy',
+      title: t('accounting:vendors.columnCurrency'), dataIndex: 'currency_code', key: 'ccy',
       width: 70, align: 'center' as const,
     },
     {
-      title: 'ERP 매핑', dataIndex: 'mssql_supplier_ref', key: 'mapped',
+      title: t('accounting:vendors.columnErpMapping'), dataIndex: 'mssql_supplier_ref', key: 'mapped',
       width: 100, align: 'center' as const,
       render: (v: number | null) => v
         ? <Tag color="green" icon={<LinkOutlined />}>#{v}</Tag>
-        : <Tag color="default">미매핑</Tag>,
+        : <Tag color="default">{t('common:status.unmapped')}</Tag>,
     },
     {
-      title: '소스', dataIndex: 'source', key: 'source',
+      title: t('accounting:vendors.columnSource'), dataIndex: 'source', key: 'source',
       width: 100, align: 'center' as const,
       render: (v: string) => (
         <Tag color={v === 'smartbooks_import' ? 'purple' : 'blue'}>
@@ -133,19 +135,19 @@ const AccountingVendorsPage: React.FC = () => {
         <Col>
           <Title level={4} style={{ margin: 0 }}>
             <ShopOutlined style={{ marginRight: 8 }} />
-            회계 공급사 ({total}건)
+            {t('accounting:vendors.titleCount', { count: total })}
           </Title>
         </Col>
         <Col>
           <Space>
-            <Popconfirm title="분개장에서 Vendor 추출?" onConfirm={handleExtract}>
+            <Popconfirm title={t('accounting:vendors.extractConfirm')} onConfirm={handleExtract}>
               <Button icon={<SyncOutlined spin={extracting} />} loading={extracting}>
-                분개장 추출
+                {t('accounting:vendors.extractButton')}
               </Button>
             </Popconfirm>
-            <Popconfirm title="ERP 공급사와 자동 매칭?" onConfirm={handleMatch}>
+            <Popconfirm title={t('accounting:vendors.matchConfirm')} onConfirm={handleMatch}>
               <Button icon={<LinkOutlined />} loading={matching} type="primary">
-                공급사 매칭
+                {t('accounting:vendors.matchButton')}
               </Button>
             </Popconfirm>
           </Space>
@@ -154,7 +156,7 @@ const AccountingVendorsPage: React.FC = () => {
 
       <Space wrap style={{ marginBottom: 16 }}>
         <Input
-          placeholder="사업자번호/이름 검색"
+          placeholder={t('accounting:vendors.searchPlaceholder')}
           prefix={<SearchOutlined />}
           value={search}
           onChange={e => { setSearch(e.target.value); setPage(1); }}
@@ -162,14 +164,14 @@ const AccountingVendorsPage: React.FC = () => {
           style={{ width: 220 }}
         />
         <Select
-          placeholder="매핑 상태"
+          placeholder={t('common:filter.mappingStatus')}
           value={mappedFilter}
           onChange={v => { setMappedFilter(v); setPage(1); }}
           allowClear
           style={{ width: 130 }}
           options={[
-            { value: true, label: '매핑됨' },
-            { value: false, label: '미매핑' },
+            { value: true, label: t('common:status.mapped') },
+            { value: false, label: t('common:status.unmapped') },
           ]}
         />
       </Space>
@@ -190,7 +192,7 @@ const AccountingVendorsPage: React.FC = () => {
             total={total}
             pageSize={50}
             onChange={setPage}
-            showTotal={t => `전체 ${t}건`}
+            showTotal={(total) => t('common:pagination.totalAll', { count: total })}
           />
         </div>
       </Card>

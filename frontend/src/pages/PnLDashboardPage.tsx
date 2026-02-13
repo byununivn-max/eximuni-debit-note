@@ -8,6 +8,7 @@ import {
   LineChartOutlined, SyncOutlined, RiseOutlined,
   FallOutlined, ArrowUpOutlined, ArrowDownOutlined,
 } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 
 const { Title, Text } = Typography;
@@ -35,11 +36,6 @@ interface YearSummary {
   ytd_net_margin: number;
 }
 
-const MONTH_LABELS = [
-  '', '1월', '2월', '3월', '4월', '5월', '6월',
-  '7월', '8월', '9월', '10월', '11월', '12월',
-];
-
 const fmtNum = (v: number) => {
   if (!v && v !== 0) return '-';
   if (v === 0) return '-';
@@ -52,6 +48,7 @@ const fmtPct = (v: number) => {
 };
 
 const PnLDashboardPage: React.FC = () => {
+  const { t } = useTranslation(['analytics', 'common']);
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<YearSummary | null>(null);
   const [year, setYear] = useState(new Date().getFullYear());
@@ -82,11 +79,11 @@ const PnLDashboardPage: React.FC = () => {
         { params: { fiscal_year: year } },
       );
       message.success(
-        `${year}년 P&L 계산 완료: ${res.data.months_calculated}개월`,
+        t('analytics:pnl.calculateSuccess', { year, months: res.data.months_calculated }),
       );
       fetchData();
     } catch (err: any) {
-      message.error(err.response?.data?.detail || 'P&L 계산 실패');
+      message.error(err.response?.data?.detail || t('common:message.failed'));
     } finally {
       setCalculating(false);
     }
@@ -94,24 +91,24 @@ const PnLDashboardPage: React.FC = () => {
 
   const columns = [
     {
-      title: '월', dataIndex: 'fiscal_month', key: 'month',
+      title: t('analytics:pnl.columnMonth'), dataIndex: 'fiscal_month', key: 'month',
       width: 60, fixed: 'left' as const,
-      render: (v: number) => <strong>{MONTH_LABELS[v]}</strong>,
+      render: (v: number) => <strong>{t(`common:month.${v}`)}</strong>,
     },
     {
-      title: '매출', dataIndex: 'revenue', key: 'rev',
+      title: t('analytics:pnl.columnRevenue'), dataIndex: 'revenue', key: 'rev',
       width: 130, align: 'right' as const,
       render: (v: number) => <Text strong>{fmtNum(v)}</Text>,
     },
     {
-      title: '원가', dataIndex: 'cogs', key: 'cogs',
+      title: t('analytics:pnl.columnCogs'), dataIndex: 'cogs', key: 'cogs',
       width: 130, align: 'right' as const,
       render: (v: number) => (
         <Text type="danger">{fmtNum(v)}</Text>
       ),
     },
     {
-      title: '매출총이익', dataIndex: 'gross_profit', key: 'gp',
+      title: t('analytics:pnl.columnGrossProfit'), dataIndex: 'gross_profit', key: 'gp',
       width: 130, align: 'right' as const,
       render: (v: number) => (
         <Text style={{ color: v >= 0 ? '#3f8600' : '#cf1322' }}>
@@ -120,7 +117,7 @@ const PnLDashboardPage: React.FC = () => {
       ),
     },
     {
-      title: 'GP율', dataIndex: 'gp_margin', key: 'gpm',
+      title: t('analytics:pnl.columnGpRate'), dataIndex: 'gp_margin', key: 'gpm',
       width: 80, align: 'center' as const,
       render: (v: number) => (
         <Tag color={v >= 30 ? 'green' : v >= 15 ? 'orange' : 'red'}>
@@ -129,7 +126,7 @@ const PnLDashboardPage: React.FC = () => {
       ),
     },
     {
-      title: '영업이익', dataIndex: 'operating_profit', key: 'op',
+      title: t('analytics:pnl.columnOperatingProfit'), dataIndex: 'operating_profit', key: 'op',
       width: 130, align: 'right' as const,
       render: (v: number) => (
         <Text style={{ color: v >= 0 ? '#3f8600' : '#cf1322' }}>
@@ -138,7 +135,7 @@ const PnLDashboardPage: React.FC = () => {
       ),
     },
     {
-      title: '순이익', dataIndex: 'net_profit', key: 'net',
+      title: t('analytics:pnl.columnNetProfit'), dataIndex: 'net_profit', key: 'net',
       width: 130, align: 'right' as const,
       render: (v: number) => (
         <Text strong style={{ color: v >= 0 ? '#1890ff' : '#cf1322' }}>
@@ -147,7 +144,7 @@ const PnLDashboardPage: React.FC = () => {
       ),
     },
     {
-      title: '순이익률', dataIndex: 'net_margin', key: 'nm',
+      title: t('analytics:pnl.columnNetMarginRate'), dataIndex: 'net_margin', key: 'nm',
       width: 90, align: 'center' as const,
       render: (v: number) => (
         <Tag color={v >= 10 ? 'blue' : v >= 0 ? 'default' : 'red'}>
@@ -167,7 +164,7 @@ const PnLDashboardPage: React.FC = () => {
         <Col>
           <Title level={4} style={{ margin: 0 }}>
             <LineChartOutlined style={{ marginRight: 8 }} />
-            종합 P&L 대시보드
+            {t('analytics:pnl.title')}
           </Title>
         </Col>
         <Col>
@@ -181,7 +178,7 @@ const PnLDashboardPage: React.FC = () => {
               }))}
             />
             <Popconfirm
-              title={`${year}년 전체 P&L 계산 실행? (비용 집계 필요)`}
+              title={t('analytics:pnl.calculateConfirm', { year })}
               onConfirm={handleCalculateYear}
             >
               <Button
@@ -189,7 +186,7 @@ const PnLDashboardPage: React.FC = () => {
                 loading={calculating}
                 type="primary"
               >
-                연간 P&L 계산
+                {t('analytics:pnl.calculateButton')}
               </Button>
             </Popconfirm>
           </Space>
@@ -202,7 +199,7 @@ const PnLDashboardPage: React.FC = () => {
             <Col span={4}>
               <Card size="small">
                 <Statistic
-                  title="YTD 매출"
+                  title={t('analytics:pnl.ytdRevenue')}
                   value={data.ytd_revenue}
                   precision={0}
                   formatter={(val) => fmtNum(Number(val))}
@@ -212,7 +209,7 @@ const PnLDashboardPage: React.FC = () => {
             <Col span={4}>
               <Card size="small">
                 <Statistic
-                  title="YTD 매출원가"
+                  title={t('analytics:pnl.ytdCogs')}
                   value={data.ytd_cogs}
                   precision={0}
                   formatter={(val) => fmtNum(Number(val))}
@@ -223,7 +220,7 @@ const PnLDashboardPage: React.FC = () => {
             <Col span={4}>
               <Card size="small">
                 <Statistic
-                  title="YTD 매출총이익"
+                  title={t('analytics:pnl.ytdGrossProfit')}
                   value={data.ytd_gross_profit}
                   precision={0}
                   formatter={(val) => fmtNum(Number(val))}
@@ -239,7 +236,7 @@ const PnLDashboardPage: React.FC = () => {
             <Col span={4}>
               <Card size="small">
                 <Statistic
-                  title="YTD 영업이익"
+                  title={t('analytics:pnl.ytdOperatingProfit')}
                   value={data.ytd_operating_profit}
                   precision={0}
                   formatter={(val) => fmtNum(Number(val))}
@@ -253,7 +250,7 @@ const PnLDashboardPage: React.FC = () => {
             <Col span={4}>
               <Card size="small">
                 <Statistic
-                  title="YTD 순이익"
+                  title={t('analytics:pnl.ytdNetProfit')}
                   value={data.ytd_net_profit}
                   precision={0}
                   formatter={(val) => fmtNum(Number(val))}
@@ -272,7 +269,7 @@ const PnLDashboardPage: React.FC = () => {
             <Col span={4}>
               <Card size="small">
                 <Statistic
-                  title="YTD 순이익률"
+                  title={t('analytics:pnl.ytdNetMargin')}
                   value={data.ytd_net_margin}
                   precision={1}
                   suffix="%"
@@ -287,7 +284,7 @@ const PnLDashboardPage: React.FC = () => {
           </Row>
 
           <Card
-            title={`${year}년 월별 손익계산서 (${data.months.length}개월)`}
+            title={t('analytics:pnl.monthlyTitle', { year, count: data.months.length })}
             size="small"
           >
             <Table

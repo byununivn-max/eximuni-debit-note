@@ -4,6 +4,7 @@ import {
   message, Card, Descriptions, Row, Col, Divider,
 } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 import type {
   MssqlSchemeCo, MssqlCoWithContract, PaginatedResponse,
@@ -12,6 +13,7 @@ import type {
 const { Title } = Typography;
 
 const COPage: React.FC = () => {
+  const { t } = useTranslation(['operations', 'common']);
   const [data, setData] = useState<MssqlSchemeCo[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -40,7 +42,7 @@ const COPage: React.FC = () => {
       setData(res.data.items);
       setTotal(res.data.total);
     } catch (err: any) {
-      message.error(err.response?.data?.detail || 'CO 목록 조회 실패');
+      message.error(err.response?.data?.detail || t('operations:co.fetchFailed'));
     } finally {
       setLoading(false);
     }
@@ -50,7 +52,7 @@ const COPage: React.FC = () => {
 
   const showCostDetail = async (record: MssqlSchemeCo) => {
     if (!record.id_co) {
-      message.warning('비용 정보가 연결되지 않았습니다');
+      message.warning(t('common:message.noCostInfo'));
       return;
     }
     setSelectedScheme(record);
@@ -62,7 +64,7 @@ const COPage: React.FC = () => {
       );
       setCostDetail(res.data);
     } catch (err: any) {
-      message.error(err.response?.data?.detail || 'CO 비용 조회 실패');
+      message.error(err.response?.data?.detail || t('operations:co.costFetchFailed'));
       setCostModalOpen(false);
     } finally {
       setCostLoading(false);
@@ -70,20 +72,20 @@ const COPage: React.FC = () => {
   };
 
   const columns = [
-    { title: 'ID', dataIndex: 'id_scheme_co', key: 'id', width: 100 },
-    { title: 'CO Form', dataIndex: 'form', key: 'form', width: 80,
+    { title: t('operations:co.columnId'), dataIndex: 'id_scheme_co', key: 'id', width: 100 },
+    { title: t('operations:co.columnForm'), dataIndex: 'form', key: 'form', width: 80,
       render: (v: string) => v ? <Tag color="purple">{v}</Tag> : null,
     },
-    { title: 'CO No.', dataIndex: 'so_co', key: 'so_co', width: 120 },
-    { title: '발급일', dataIndex: 'ngay_cap', key: 'ngay_cap', width: 110 },
-    { title: '고객사', dataIndex: 'ten_kh', key: 'ten_kh', width: 200 },
-    { title: 'Invoice', dataIndex: 'so_invoice', key: 'invoice', width: 140 },
-    { title: '통관번호', dataIndex: 'so_to_khai', key: 'so_to_khai', width: 130 },
-    { title: '비고', dataIndex: 'note', key: 'note', width: 150, ellipsis: true },
-    { title: '비용', key: 'costs', width: 80,
+    { title: t('operations:co.columnNo'), dataIndex: 'so_co', key: 'so_co', width: 120 },
+    { title: t('operations:co.columnIssueDate'), dataIndex: 'ngay_cap', key: 'ngay_cap', width: 110 },
+    { title: t('operations:co.columnClient'), dataIndex: 'ten_kh', key: 'ten_kh', width: 200 },
+    { title: t('operations:co.columnInvoice'), dataIndex: 'so_invoice', key: 'invoice', width: 140 },
+    { title: t('operations:co.columnCustomsNo'), dataIndex: 'so_to_khai', key: 'so_to_khai', width: 130 },
+    { title: t('operations:co.columnNote'), dataIndex: 'note', key: 'note', width: 150, ellipsis: true },
+    { title: t('operations:co.columnCost'), key: 'costs', width: 80,
       render: (_: any, r: MssqlSchemeCo) => (
         <a onClick={() => showCostDetail(r)}>
-          {r.id_co ? '상세' : '-'}
+          {r.id_co ? t('common:button.detail') : '-'}
         </a>
       ),
     },
@@ -91,13 +93,13 @@ const COPage: React.FC = () => {
 
   return (
     <div>
-      <Title level={4} style={{ marginBottom: 16 }}>CO 원산지 증명 관리</Title>
+      <Title level={4} style={{ marginBottom: 16 }}>{t('operations:co.title')}</Title>
 
       <Card size="small" style={{ marginBottom: 16 }}>
         <Row gutter={16}>
           <Col span={8}>
             <Input
-              placeholder="CO번호/Invoice/고객명 검색"
+              placeholder={t('operations:co.searchPlaceholder')}
               prefix={<SearchOutlined />}
               allowClear
               onPressEnter={(e) => {
@@ -111,7 +113,7 @@ const COPage: React.FC = () => {
           </Col>
           <Col span={4}>
             <Select
-              placeholder="CO Form"
+              placeholder={t('operations:co.formFilter')}
               allowClear
               style={{ width: '100%' }}
               onChange={(v) => { setFormFilter(v); setPage(1); }}
@@ -148,7 +150,7 @@ const COPage: React.FC = () => {
       </Card>
 
       <Modal
-        title={`CO 비용 상세${selectedScheme?.so_co ? ` — ${selectedScheme.so_co}` : ''}`}
+        title={`${t('operations:co.costDetailTitle')}${selectedScheme?.so_co ? ` — ${selectedScheme.so_co}` : ''}`}
         open={costModalOpen}
         onCancel={() => { setCostModalOpen(false); setCostDetail(null); setSelectedScheme(null); }}
         footer={null}
@@ -159,32 +161,32 @@ const COPage: React.FC = () => {
           <>
             <Descriptions bordered size="small" column={2}>
               {costDetail.le_phi_co != null && costDetail.le_phi_co > 0 && (
-                <Descriptions.Item label="CO 인지세">
+                <Descriptions.Item label={t('operations:co.coStampDuty')}>
                   {costDetail.le_phi_co.toLocaleString()} VND
                 </Descriptions.Item>
               )}
               {costDetail.le_phi_bo_cong_thuong != null && costDetail.le_phi_bo_cong_thuong > 0 && (
-                <Descriptions.Item label="산업통상부 인지세">
+                <Descriptions.Item label={t('operations:co.moitStampDuty')}>
                   {costDetail.le_phi_bo_cong_thuong.toLocaleString()} VND
                 </Descriptions.Item>
               )}
               {costDetail.phi_cap_moi_cap_lai && (
-                <Descriptions.Item label="재발급/신규 발급비">
+                <Descriptions.Item label={t('operations:co.reissue')}>
                   {costDetail.phi_cap_moi_cap_lai}
                 </Descriptions.Item>
               )}
               {costDetail.phi_dv_sua_doi != null && costDetail.phi_dv_sua_doi > 0 && (
-                <Descriptions.Item label="수정 서비스비">
+                <Descriptions.Item label={t('operations:co.modificationFee')}>
                   {costDetail.phi_dv_sua_doi.toLocaleString()} VND
                 </Descriptions.Item>
               )}
               {costDetail.trang_thai && (
-                <Descriptions.Item label="상태">
+                <Descriptions.Item label={t('operations:co.status')}>
                   <Tag>{costDetail.trang_thai}</Tag>
                 </Descriptions.Item>
               )}
               {costDetail.note && (
-                <Descriptions.Item label="비고" span={2}>
+                <Descriptions.Item label={t('operations:co.columnNote')} span={2}>
                   {costDetail.note}
                 </Descriptions.Item>
               )}
@@ -192,15 +194,15 @@ const COPage: React.FC = () => {
 
             {costDetail.contract && (
               <>
-                <Divider>계약 정보</Divider>
+                <Divider>{t('operations:co.contractInfo')}</Divider>
                 <Descriptions bordered size="small" column={2}>
-                  <Descriptions.Item label="고객명">
+                  <Descriptions.Item label={t('operations:co.contractCustomer')}>
                     {costDetail.contract.ten_khach}
                   </Descriptions.Item>
-                  <Descriptions.Item label="CO 수수료">
+                  <Descriptions.Item label={t('operations:co.contractCoFee')}>
                     {costDetail.contract.co_fee}
                   </Descriptions.Item>
-                  <Descriptions.Item label="계약 금액">
+                  <Descriptions.Item label={t('operations:co.contractAmount')}>
                     {costDetail.contract.amount?.toLocaleString()} VND
                   </Descriptions.Item>
                 </Descriptions>

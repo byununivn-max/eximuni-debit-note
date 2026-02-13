@@ -4,12 +4,14 @@ import {
   Descriptions, Row, Col, Select,
 } from 'antd';
 import { SearchOutlined, EyeOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 import type { MssqlClient, MssqlClientDetail, PaginatedResponse } from '../types/mssql';
 
 const { Title } = Typography;
 
 const ClientsPage: React.FC = () => {
+  const { t } = useTranslation(['analytics', 'common']);
   const [clients, setClients] = useState<MssqlClient[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -37,7 +39,7 @@ const ClientsPage: React.FC = () => {
       setClients(res.data.items);
       setTotal(res.data.total);
     } catch (err: any) {
-      message.error(err.response?.data?.detail || '거래처 목록 조회 실패');
+      message.error(err.response?.data?.detail || t('analytics:masterData.clients.fetchFailed'));
     } finally {
       setLoading(false);
     }
@@ -54,7 +56,7 @@ const ClientsPage: React.FC = () => {
       );
       setDetailData(res.data);
     } catch (err: any) {
-      message.error(err.response?.data?.detail || '거래처 상세 조회 실패');
+      message.error(err.response?.data?.detail || t('analytics:masterData.clients.detailFetchFailed'));
       setDetailOpen(false);
     } finally {
       setDetailLoading(false);
@@ -62,26 +64,28 @@ const ClientsPage: React.FC = () => {
   };
 
   const columns = [
-    { title: 'ID', dataIndex: 'id_clients', key: 'id', width: 70 },
-    { title: '회사명', dataIndex: 'company_name', key: 'company', width: 250 },
-    { title: '이름', key: 'name', width: 150,
+    { title: t('analytics:masterData.clients.columnId'), dataIndex: 'id_clients', key: 'id', width: 70 },
+    { title: t('analytics:masterData.clients.columnCompany'), dataIndex: 'company_name', key: 'company', width: 250 },
+    { title: t('analytics:masterData.clients.columnName'), key: 'name', width: 150,
       render: (_: any, r: MssqlClient) =>
         [r.first_name, r.last_name].filter(Boolean).join(' ') || '-',
     },
-    { title: '이메일', dataIndex: 'email', key: 'email', width: 200 },
-    { title: '전화', dataIndex: 'phone_number', key: 'phone', width: 140 },
-    { title: '유형', dataIndex: 'clients_type', key: 'type', width: 100,
+    { title: t('analytics:masterData.clients.columnEmail'), dataIndex: 'email', key: 'email', width: 200 },
+    { title: t('analytics:masterData.clients.columnPhone'), dataIndex: 'phone_number', key: 'phone', width: 140 },
+    { title: t('analytics:masterData.clients.columnType'), dataIndex: 'clients_type', key: 'type', width: 100,
       render: (v: string) => v ? <Tag>{v}</Tag> : null,
     },
-    { title: '상태', dataIndex: 'active', key: 'active', width: 80,
+    { title: t('analytics:masterData.clients.columnStatus'), dataIndex: 'active', key: 'active', width: 80,
       render: (v: boolean) => (
-        <Tag color={v ? 'green' : 'default'}>{v ? '활성' : '비활성'}</Tag>
+        <Tag color={v ? 'green' : 'default'}>
+          {v ? t('common:status.active') : t('common:status.inactive')}
+        </Tag>
       ),
     },
     { title: '', key: 'action', width: 80,
       render: (_: any, r: MssqlClient) => (
         <a onClick={() => showDetail(r.id_clients)}>
-          <EyeOutlined /> 상세
+          <EyeOutlined /> {t('common:button.detail')}
         </a>
       ),
     },
@@ -89,13 +93,13 @@ const ClientsPage: React.FC = () => {
 
   return (
     <div>
-      <Title level={4} style={{ marginBottom: 16 }}>거래처 관리</Title>
+      <Title level={4} style={{ marginBottom: 16 }}>{t('analytics:masterData.clients.title')}</Title>
 
       <Card size="small" style={{ marginBottom: 16 }}>
         <Row gutter={16}>
           <Col span={8}>
             <Input
-              placeholder="회사명/이메일/이름 검색"
+              placeholder={t('analytics:masterData.clients.searchPlaceholder')}
               prefix={<SearchOutlined />}
               allowClear
               onPressEnter={(e) => {
@@ -113,8 +117,8 @@ const ClientsPage: React.FC = () => {
               style={{ width: '100%' }}
               onChange={(v) => { setActiveOnly(v); setPage(1); }}
               options={[
-                { value: true, label: '활성만' },
-                { value: false, label: '전체' },
+                { value: true, label: t('common:filter.activeOnly') },
+                { value: false, label: t('common:filter.all') },
               ]}
             />
           </Col>
@@ -140,7 +144,7 @@ const ClientsPage: React.FC = () => {
       </Card>
 
       <Modal
-        title="거래처 상세"
+        title={t('analytics:masterData.clients.detailTitle')}
         open={detailOpen}
         onCancel={() => { setDetailOpen(false); setDetailData(null); }}
         footer={null}
@@ -149,25 +153,25 @@ const ClientsPage: React.FC = () => {
       >
         {detailData && (
           <Descriptions bordered size="small" column={2}>
-            <Descriptions.Item label="회사명" span={2}>
+            <Descriptions.Item label={t('analytics:masterData.clients.descCompany')} span={2}>
               {detailData.company_name}
             </Descriptions.Item>
-            <Descriptions.Item label="이름">
+            <Descriptions.Item label={t('analytics:masterData.clients.descName')}>
               {[detailData.first_name, detailData.last_name].filter(Boolean).join(' ')}
             </Descriptions.Item>
-            <Descriptions.Item label="이메일">{detailData.email}</Descriptions.Item>
-            <Descriptions.Item label="전화">{detailData.phone_number}</Descriptions.Item>
-            <Descriptions.Item label="유형">{detailData.clients_type}</Descriptions.Item>
-            <Descriptions.Item label="성별">{detailData.gender}</Descriptions.Item>
-            <Descriptions.Item label="언어">{detailData.language}</Descriptions.Item>
-            <Descriptions.Item label="직위">{detailData.position}</Descriptions.Item>
-            <Descriptions.Item label="업종">{detailData.industry}</Descriptions.Item>
-            <Descriptions.Item label="서비스">{detailData.service}</Descriptions.Item>
-            <Descriptions.Item label="FDI">{detailData.fdi}</Descriptions.Item>
-            <Descriptions.Item label="지역">{detailData.province}</Descriptions.Item>
-            <Descriptions.Item label="캠페인">{detailData.campaign}</Descriptions.Item>
+            <Descriptions.Item label={t('analytics:masterData.clients.descEmail')}>{detailData.email}</Descriptions.Item>
+            <Descriptions.Item label={t('analytics:masterData.clients.descPhone')}>{detailData.phone_number}</Descriptions.Item>
+            <Descriptions.Item label={t('analytics:masterData.clients.descType')}>{detailData.clients_type}</Descriptions.Item>
+            <Descriptions.Item label={t('analytics:masterData.clients.descGender')}>{detailData.gender}</Descriptions.Item>
+            <Descriptions.Item label={t('analytics:masterData.clients.descLanguage')}>{detailData.language}</Descriptions.Item>
+            <Descriptions.Item label={t('analytics:masterData.clients.descPosition')}>{detailData.position}</Descriptions.Item>
+            <Descriptions.Item label={t('analytics:masterData.clients.descIndustry')}>{detailData.industry}</Descriptions.Item>
+            <Descriptions.Item label={t('analytics:masterData.clients.descService')}>{detailData.service}</Descriptions.Item>
+            <Descriptions.Item label={t('analytics:masterData.clients.descFdi')}>{detailData.fdi}</Descriptions.Item>
+            <Descriptions.Item label={t('analytics:masterData.clients.descProvince')}>{detailData.province}</Descriptions.Item>
+            <Descriptions.Item label={t('analytics:masterData.clients.descCampaign')}>{detailData.campaign}</Descriptions.Item>
             {detailData.note && (
-              <Descriptions.Item label="메모" span={2}>
+              <Descriptions.Item label={t('analytics:masterData.clients.descMemo')} span={2}>
                 {detailData.note}
               </Descriptions.Item>
             )}

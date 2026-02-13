@@ -8,6 +8,7 @@ import {
   SwapOutlined, PlusOutlined, SearchOutlined,
   ArrowUpOutlined, ArrowDownOutlined,
 } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 
 const { Title, Text } = Typography;
@@ -53,6 +54,7 @@ const fmtNum = (v: number) => {
 };
 
 const QuotationComparisonPage: React.FC = () => {
+  const { t } = useTranslation(['analytics', 'common']);
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState<QuotationActual[]>([]);
   const [summary, setSummary] = useState<Summary | null>(null);
@@ -91,7 +93,7 @@ const QuotationComparisonPage: React.FC = () => {
     try {
       const values = await form.validateFields();
       await api.post('/api/v1/quotation-comparison', values);
-      message.success('견적-실적 비교 데이터가 등록되었습니다.');
+      message.success(t('analytics:quotation.createSuccess'));
       setModalOpen(false);
       form.resetFields();
       fetchData();
@@ -102,7 +104,7 @@ const QuotationComparisonPage: React.FC = () => {
 
   const columns = [
     {
-      title: '유형', dataIndex: 'service_type', key: 'type',
+      title: t('analytics:quotation.columnType'), dataIndex: 'service_type', key: 'type',
       width: 80, align: 'center' as const,
       render: (v: string) => (
         <Tag color={TYPE_COLOR[v] || 'default'}>
@@ -111,39 +113,39 @@ const QuotationComparisonPage: React.FC = () => {
       ),
     },
     {
-      title: '고객명', dataIndex: 'customer_name', key: 'name',
+      title: t('analytics:quotation.columnCustomer'), dataIndex: 'customer_name', key: 'name',
       ellipsis: true, width: 160,
       render: (v: string | null) => <Text strong>{v || '-'}</Text>,
     },
     {
-      title: 'Invoice', dataIndex: 'invoice_no', key: 'inv',
+      title: t('analytics:quotation.columnInvoice'), dataIndex: 'invoice_no', key: 'inv',
       width: 120, ellipsis: true,
       render: (v: string | null) => v || '-',
     },
     {
-      title: '분석일', dataIndex: 'analysis_date', key: 'date',
+      title: t('analytics:quotation.columnAnalysisDate'), dataIndex: 'analysis_date', key: 'date',
       width: 100,
       render: (v: string | null) => v || '-',
     },
     {
-      title: '견적', dataIndex: 'quotation_amount', key: 'quot',
+      title: t('analytics:quotation.columnQuotation'), dataIndex: 'quotation_amount', key: 'quot',
       width: 130, align: 'right' as const,
       render: fmtNum,
     },
     {
-      title: '실제 매출', dataIndex: 'actual_selling', key: 'sell',
+      title: t('analytics:quotation.columnActualSelling'), dataIndex: 'actual_selling', key: 'sell',
       width: 130, align: 'right' as const,
       render: fmtNum,
     },
     {
-      title: '실제 매입', dataIndex: 'actual_buying', key: 'buy',
+      title: t('analytics:quotation.columnActualBuying'), dataIndex: 'actual_buying', key: 'buy',
       width: 130, align: 'right' as const,
       render: (v: number) => (
         <Text type="danger">{fmtNum(v)}</Text>
       ),
     },
     {
-      title: '매출 차이', dataIndex: 'variance_selling', key: 'vs',
+      title: t('analytics:quotation.columnVarianceSelling'), dataIndex: 'variance_selling', key: 'vs',
       width: 120, align: 'right' as const,
       render: (v: number) => (
         <Text style={{
@@ -155,7 +157,7 @@ const QuotationComparisonPage: React.FC = () => {
       ),
     },
     {
-      title: 'GP 차이', dataIndex: 'variance_gp', key: 'vgp',
+      title: t('analytics:quotation.columnVarianceGp'), dataIndex: 'variance_gp', key: 'vgp',
       width: 120, align: 'right' as const,
       render: (v: number) => (
         <Tag color={v > 0 ? 'green' : v < 0 ? 'red' : 'default'}>
@@ -175,7 +177,7 @@ const QuotationComparisonPage: React.FC = () => {
         <Col>
           <Title level={4} style={{ margin: 0 }}>
             <SwapOutlined style={{ marginRight: 8 }} />
-            견적-실적 비교 분석
+            {t('analytics:quotation.title')}
           </Title>
         </Col>
         <Col>
@@ -184,7 +186,7 @@ const QuotationComparisonPage: React.FC = () => {
               value={year}
               onChange={setYear}
               allowClear
-              placeholder="연도"
+              placeholder={t('common:filter.year')}
               style={{ width: 100 }}
               options={[2024, 2025, 2026].map(y => ({ value: y, label: String(y) }))}
             />
@@ -192,7 +194,7 @@ const QuotationComparisonPage: React.FC = () => {
               value={serviceType}
               onChange={setServiceType}
               allowClear
-              placeholder="유형"
+              placeholder={t('common:filter.typeFilter')}
               style={{ width: 120 }}
               options={[
                 { value: 'clearance', label: 'Clearance' },
@@ -205,7 +207,7 @@ const QuotationComparisonPage: React.FC = () => {
               icon={<PlusOutlined />}
               onClick={() => setModalOpen(true)}
             >
-              신규 등록
+              {t('analytics:quotation.createButton')}
             </Button>
           </Space>
         </Col>
@@ -215,13 +217,13 @@ const QuotationComparisonPage: React.FC = () => {
         <Row gutter={16} style={{ marginBottom: 16 }}>
           <Col span={4}>
             <Card size="small">
-              <Statistic title="총 건수" value={summary.total_count} suffix="건" />
+              <Statistic title={t('analytics:quotation.totalCount')} value={summary.total_count} suffix="건" />
             </Card>
           </Col>
           <Col span={4}>
             <Card size="small">
               <Statistic
-                title="견적 합계"
+                title={t('analytics:quotation.totalQuotation')}
                 value={summary.total_quotation}
                 precision={0}
                 formatter={(val) => fmtNum(Number(val))}
@@ -231,7 +233,7 @@ const QuotationComparisonPage: React.FC = () => {
           <Col span={4}>
             <Card size="small">
               <Statistic
-                title="실제 매출"
+                title={t('analytics:quotation.totalSelling')}
                 value={summary.total_selling}
                 precision={0}
                 formatter={(val) => fmtNum(Number(val))}
@@ -241,7 +243,7 @@ const QuotationComparisonPage: React.FC = () => {
           <Col span={4}>
             <Card size="small">
               <Statistic
-                title="실제 GP"
+                title={t('analytics:quotation.totalGp')}
                 value={summary.total_gp}
                 precision={0}
                 formatter={(val) => fmtNum(Number(val))}
@@ -253,7 +255,7 @@ const QuotationComparisonPage: React.FC = () => {
           <Col span={4}>
             <Card size="small">
               <Statistic
-                title="매출 편차"
+                title={t('analytics:quotation.varianceSelling')}
                 value={summary.variance_selling}
                 precision={0}
                 formatter={(val) => fmtNum(Number(val))}
@@ -266,7 +268,7 @@ const QuotationComparisonPage: React.FC = () => {
           <Col span={4}>
             <Card size="small">
               <Statistic
-                title="정확도"
+                title={t('analytics:quotation.accuracy')}
                 value={summary.accuracy_rate}
                 precision={1}
                 suffix="%"
@@ -281,7 +283,7 @@ const QuotationComparisonPage: React.FC = () => {
 
       <Space style={{ marginBottom: 16 }}>
         <Input
-          placeholder="고객명 검색"
+          placeholder={t('analytics:quotation.searchPlaceholder')}
           prefix={<SearchOutlined />}
           value={search}
           onChange={e => setSearch(e.target.value)}
@@ -303,18 +305,18 @@ const QuotationComparisonPage: React.FC = () => {
       </Card>
 
       <Modal
-        title="견적-실적 비교 등록"
+        title={t('analytics:quotation.createTitle')}
         open={modalOpen}
         onOk={handleCreate}
         onCancel={() => { setModalOpen(false); form.resetFields(); }}
-        okText="등록"
-        cancelText="취소"
+        okText={t('common:button.create')}
+        cancelText={t('common:button.cancel')}
       >
         <Form form={form} layout="vertical">
-          <Form.Item name="customer_name" label="고객명" rules={[{ required: true }]}>
+          <Form.Item name="customer_name" label={t('analytics:quotation.formCustomer')} rules={[{ required: true }]}>
             <Input />
           </Form.Item>
-          <Form.Item name="service_type" label="유형" initialValue="clearance">
+          <Form.Item name="service_type" label={t('analytics:quotation.formType')} initialValue="clearance">
             <Select options={[
               { value: 'clearance', label: 'Clearance' },
               { value: 'ops', label: 'Ops' },
@@ -323,25 +325,25 @@ const QuotationComparisonPage: React.FC = () => {
           </Form.Item>
           <Row gutter={16}>
             <Col span={8}>
-              <Form.Item name="quotation_amount" label="견적 금액">
+              <Form.Item name="quotation_amount" label={t('analytics:quotation.formQuotation')}>
                 <InputNumber style={{ width: '100%' }} />
               </Form.Item>
             </Col>
             <Col span={8}>
-              <Form.Item name="actual_selling" label="실제 매출">
+              <Form.Item name="actual_selling" label={t('analytics:quotation.formActualSelling')}>
                 <InputNumber style={{ width: '100%' }} />
               </Form.Item>
             </Col>
             <Col span={8}>
-              <Form.Item name="actual_buying" label="실제 매입">
+              <Form.Item name="actual_buying" label={t('analytics:quotation.formActualBuying')}>
                 <InputNumber style={{ width: '100%' }} />
               </Form.Item>
             </Col>
           </Row>
-          <Form.Item name="invoice_no" label="인보이스 번호">
+          <Form.Item name="invoice_no" label={t('analytics:quotation.formInvoice')}>
             <Input />
           </Form.Item>
-          <Form.Item name="notes" label="비고">
+          <Form.Item name="notes" label={t('analytics:quotation.formNotes')}>
             <Input.TextArea rows={2} />
           </Form.Item>
         </Form>

@@ -13,10 +13,10 @@ class MssqlCustomerConfig(MSSQLBase):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     customer = Column(String(255), nullable=False)
-    co_cd_type = Column(String(20), nullable=True)
+    co_cd_type = Column(String(10), nullable=True)
     form_type = Column(String(255), nullable=True)
-    phan_luong = Column(String(100), nullable=True)
-    field_name = Column(String(200), nullable=False)
+    phan_luong = Column(String(50), nullable=True)
+    field_name = Column(String(100), nullable=False)
     field_value = Column(Numeric(15, 2), nullable=True)
     priority = Column(Integer, nullable=True)
     is_active = Column(Boolean, nullable=True)

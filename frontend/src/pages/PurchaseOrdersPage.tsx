@@ -9,6 +9,7 @@ import {
   EyeOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
+import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 
 const { Title } = Typography;
@@ -71,16 +72,17 @@ const PAYMENT_COLORS: Record<string, string> = {
   PAID: 'green',
 };
 
-const COST_CATEGORIES = [
-  { value: 'freight', label: '운임' },
-  { value: 'handling', label: '하역' },
-  { value: 'customs', label: '통관' },
-  { value: 'trucking', label: '운송' },
-  { value: 'co', label: 'CO' },
-  { value: 'other', label: '기타' },
-];
+const COST_CATEGORY_KEYS: Record<string, string> = {
+  freight: 'common:costCategory.freight',
+  handling: 'common:costCategory.handling',
+  customs: 'common:costCategory.customs',
+  trucking: 'common:costCategory.trucking',
+  co: 'common:costCategory.co',
+  other: 'common:costCategory.other',
+};
 
 const PurchaseOrdersPage: React.FC = () => {
+  const { t } = useTranslation(['trading', 'common']);
   const [orders, setOrders] = useState<PurchaseOrder[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [total, setTotal] = useState(0);
@@ -112,7 +114,7 @@ const PurchaseOrdersPage: React.FC = () => {
       setTotal(poRes.data.total);
       setSuppliers(supRes.data.items);
     } catch (err: any) {
-      message.error(err.response?.data?.detail || '매입 목록 조회 실패');
+      message.error(err.response?.data?.detail || t('trading:purchaseOrders.fetchFailed'));
     } finally {
       setLoading(false);
     }
@@ -135,32 +137,32 @@ const PurchaseOrdersPage: React.FC = () => {
         })),
       };
       await api.post('/api/v1/purchase-orders', payload);
-      message.success('매입주문 등록 완료');
+      message.success(t('trading:purchaseOrders.createSuccess'));
       setModalOpen(false);
       form.resetFields();
       fetchData();
     } catch (err: any) {
-      message.error(err.response?.data?.detail || '등록 실패');
+      message.error(err.response?.data?.detail || t('common:message.createFailed'));
     }
   };
 
   const handleConfirm = async (poId: number) => {
     try {
       await api.post(`/api/v1/purchase-orders/${poId}/confirm`);
-      message.success('매입주문 확정 완료');
+      message.success(t('trading:purchaseOrders.confirmSuccess'));
       fetchData();
     } catch (err: any) {
-      message.error(err.response?.data?.detail || '확정 실패');
+      message.error(err.response?.data?.detail || t('common:message.confirmFailed'));
     }
   };
 
   const handleCancel = async (poId: number) => {
     try {
       await api.post(`/api/v1/purchase-orders/${poId}/cancel`);
-      message.success('매입주문 취소 완료');
+      message.success(t('trading:purchaseOrders.cancelSuccess'));
       fetchData();
     } catch (err: any) {
-      message.error(err.response?.data?.detail || '취소 실패');
+      message.error(err.response?.data?.detail || t('common:message.cancelFailed'));
     }
   };
 
@@ -170,32 +172,32 @@ const PurchaseOrdersPage: React.FC = () => {
       setDetailData(res.data);
       setDetailOpen(true);
     } catch (err: any) {
-      message.error(err.response?.data?.detail || '상세 조회 실패');
+      message.error(err.response?.data?.detail || t('common:message.fetchFailed'));
     }
   };
 
   const columns = [
-    { title: 'PO No.', dataIndex: 'po_number', key: 'po', width: 160 },
-    { title: '공급사', dataIndex: 'supplier_name', key: 'supplier', width: 200 },
-    { title: '서비스', dataIndex: 'service_type', key: 'service', width: 80,
+    { title: t('trading:purchaseOrders.columnPoNumber'), dataIndex: 'po_number', key: 'po', width: 160 },
+    { title: t('trading:purchaseOrders.columnSupplier'), dataIndex: 'supplier_name', key: 'supplier', width: 200 },
+    { title: t('trading:purchaseOrders.columnService'), dataIndex: 'service_type', key: 'service', width: 80,
       render: (v: string) => v ? <Tag>{v}</Tag> : null,
     },
-    { title: 'Invoice', dataIndex: 'invoice_no', key: 'invoice', width: 130 },
-    { title: '금액', dataIndex: 'total_amount', key: 'amount', width: 130, align: 'right' as const,
+    { title: t('trading:purchaseOrders.columnInvoice'), dataIndex: 'invoice_no', key: 'invoice', width: 130 },
+    { title: t('trading:purchaseOrders.columnAmount'), dataIndex: 'total_amount', key: 'amount', width: 130, align: 'right' as const,
       render: (v: number, r: PurchaseOrder) =>
         `${Number(v).toLocaleString()} ${r.currency}`,
     },
-    { title: '상태', dataIndex: 'status', key: 'status', width: 90,
+    { title: t('trading:purchaseOrders.columnStatus'), dataIndex: 'status', key: 'status', width: 90,
       render: (v: string) => (
         <Tag color={STATUS_COLORS[v] || 'default'}>{v}</Tag>
       ),
     },
-    { title: '결제', dataIndex: 'payment_status', key: 'payment', width: 90,
+    { title: t('trading:purchaseOrders.columnPayment'), dataIndex: 'payment_status', key: 'payment', width: 90,
       render: (v: string) => (
         <Tag color={PAYMENT_COLORS[v] || 'default'}>{v}</Tag>
       ),
     },
-    { title: '항목수', key: 'items', width: 70, align: 'center' as const,
+    { title: t('trading:purchaseOrders.columnItemCount'), key: 'items', width: 70, align: 'center' as const,
       render: (_: any, r: PurchaseOrder) => r.items?.length || 0,
     },
     { title: '', key: 'action', width: 200,
@@ -203,22 +205,22 @@ const PurchaseOrdersPage: React.FC = () => {
         <Space size="small">
           <Button type="link" size="small" icon={<EyeOutlined />}
             onClick={() => showDetail(r.po_id)}>
-            상세
+            {t('common:button.detail')}
           </Button>
           {r.status === 'DRAFT' && (
             <>
-              <Popconfirm title="매입주문을 확정하시겠습니까?"
+              <Popconfirm title={t('trading:purchaseOrders.confirmQuestion')}
                 onConfirm={() => handleConfirm(r.po_id)}>
                 <Button type="link" size="small" icon={<CheckCircleOutlined />}
                   style={{ color: 'green' }}>
-                  확정
+                  {t('common:button.confirm')}
                 </Button>
               </Popconfirm>
-              <Popconfirm title="매입주문을 취소하시겠습니까?"
+              <Popconfirm title={t('trading:purchaseOrders.cancelQuestion')}
                 onConfirm={() => handleCancel(r.po_id)}>
                 <Button type="link" size="small" icon={<CloseCircleOutlined />}
                   danger>
-                  취소
+                  {t('common:button.cancel')}
                 </Button>
               </Popconfirm>
             </>
@@ -231,10 +233,10 @@ const PurchaseOrdersPage: React.FC = () => {
   return (
     <div>
       <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 16 }}>
-        <Title level={4} style={{ margin: 0 }}>매입 관리</Title>
+        <Title level={4} style={{ margin: 0 }}>{t('trading:purchaseOrders.title')}</Title>
         <Button type="primary" icon={<PlusOutlined />}
           onClick={() => { form.resetFields(); form.setFieldsValue({ currency: 'VND' }); setModalOpen(true); }}>
-          매입주문 등록
+          {t('trading:purchaseOrders.createButton')}
         </Button>
       </Space>
 
@@ -242,7 +244,7 @@ const PurchaseOrdersPage: React.FC = () => {
         <Row gutter={16}>
           <Col span={6}>
             <Input
-              placeholder="PO번호/Invoice 검색"
+              placeholder={t('trading:purchaseOrders.searchPlaceholder')}
               prefix={<SearchOutlined />}
               allowClear
               onPressEnter={(e) => {
@@ -256,14 +258,14 @@ const PurchaseOrdersPage: React.FC = () => {
           </Col>
           <Col span={4}>
             <Select
-              placeholder="상태"
+              placeholder={t('trading:purchaseOrders.statusFilter')}
               allowClear
               style={{ width: '100%' }}
               onChange={(v) => { setStatusFilter(v); setPage(1); }}
               options={[
-                { value: 'DRAFT', label: 'DRAFT' },
-                { value: 'CONFIRMED', label: 'CONFIRMED' },
-                { value: 'CANCELLED', label: 'CANCELLED' },
+                { value: 'DRAFT', label: t('common:status.draft') },
+                { value: 'CONFIRMED', label: t('common:status.confirmed') },
+                { value: 'CANCELLED', label: t('common:status.cancelled') },
               ]}
             />
           </Col>
@@ -283,7 +285,7 @@ const PurchaseOrdersPage: React.FC = () => {
             pageSize,
             total,
             showSizeChanger: true,
-            showTotal: (t) => `총 ${t}건`,
+            showTotal: (total) => t('common:pagination.totalItems', { count: total }),
             onChange: (p, ps) => { setPage(p); setPageSize(ps); },
           }}
         />
@@ -291,18 +293,18 @@ const PurchaseOrdersPage: React.FC = () => {
 
       {/* 등록 모달 */}
       <Modal
-        title="매입주문 등록"
+        title={t('trading:purchaseOrders.createTitle')}
         open={modalOpen}
         onOk={handleCreate}
         onCancel={() => setModalOpen(false)}
-        okText="등록"
-        cancelText="취소"
+        okText={t('common:button.create')}
+        cancelText={t('common:button.cancel')}
         width={800}
       >
         <Form form={form} layout="vertical">
           <Row gutter={16}>
             <Col span={12}>
-              <Form.Item name="supplier_id" label="공급사" rules={[{ required: true }]}>
+              <Form.Item name="supplier_id" label={t('trading:purchaseOrders.formSupplier')} rules={[{ required: true }]}>
                 <Select
                   showSearch
                   optionFilterProp="label"
@@ -314,12 +316,12 @@ const PurchaseOrdersPage: React.FC = () => {
               </Form.Item>
             </Col>
             <Col span={6}>
-              <Form.Item name="service_type" label="서비스 유형">
-                <Select allowClear options={COST_CATEGORIES} />
+              <Form.Item name="service_type" label={t('trading:purchaseOrders.formServiceType')}>
+                <Select allowClear options={Object.entries(COST_CATEGORY_KEYS).map(([value, key]) => ({ value, label: t(key) }))} />
               </Form.Item>
             </Col>
             <Col span={6}>
-              <Form.Item name="currency" label="통화">
+              <Form.Item name="currency" label={t('trading:purchaseOrders.formCurrency')}>
                 <Select options={[
                   { value: 'VND', label: 'VND' },
                   { value: 'USD', label: 'USD' },
@@ -330,48 +332,48 @@ const PurchaseOrdersPage: React.FC = () => {
           </Row>
           <Row gutter={16}>
             <Col span={8}>
-              <Form.Item name="invoice_no" label="Invoice No.">
+              <Form.Item name="invoice_no" label={t('trading:purchaseOrders.formInvoiceNo')}>
                 <Input />
               </Form.Item>
             </Col>
             <Col span={8}>
-              <Form.Item name="invoice_date" label="Invoice 일자">
+              <Form.Item name="invoice_date" label={t('trading:purchaseOrders.formInvoiceDate')}>
                 <DatePicker style={{ width: '100%' }} />
               </Form.Item>
             </Col>
             <Col span={8}>
-              <Form.Item name="mssql_shipment_ref" label="Shipment Ref (ID)">
+              <Form.Item name="mssql_shipment_ref" label={t('trading:purchaseOrders.formShipmentRef')}>
                 <InputNumber style={{ width: '100%' }} />
               </Form.Item>
             </Col>
           </Row>
           <Row gutter={16}>
             <Col span={6}>
-              <Form.Item name="amount" label="공급가">
+              <Form.Item name="amount" label={t('trading:purchaseOrders.formSupplyPrice')}>
                 <InputNumber style={{ width: '100%' }} min={0} />
               </Form.Item>
             </Col>
             <Col span={6}>
-              <Form.Item name="vat_rate" label="VAT율 (%)">
+              <Form.Item name="vat_rate" label={t('trading:purchaseOrders.formVatRate')}>
                 <InputNumber style={{ width: '100%' }} min={0} max={100} />
               </Form.Item>
             </Col>
             <Col span={6}>
-              <Form.Item name="vat_amount" label="VAT 금액">
+              <Form.Item name="vat_amount" label={t('trading:purchaseOrders.formVatAmount')}>
                 <InputNumber style={{ width: '100%' }} min={0} />
               </Form.Item>
             </Col>
             <Col span={6}>
-              <Form.Item name="total_amount" label="합계">
+              <Form.Item name="total_amount" label={t('trading:purchaseOrders.formTotal')}>
                 <InputNumber style={{ width: '100%' }} min={0} />
               </Form.Item>
             </Col>
           </Row>
-          <Form.Item name="notes" label="메모">
+          <Form.Item name="notes" label={t('trading:purchaseOrders.formMemo')}>
             <Input.TextArea rows={2} />
           </Form.Item>
 
-          <Divider>매입 상세 항목</Divider>
+          <Divider>{t('trading:purchaseOrders.detailItems')}</Divider>
           <Form.List name="items">
             {(fields, { add, remove }) => (
               <>
@@ -379,37 +381,37 @@ const PurchaseOrdersPage: React.FC = () => {
                   <Row gutter={8} key={key} align="middle">
                     <Col span={7}>
                       <Form.Item name={[name, 'description']} rules={[{ required: true }]}>
-                        <Input placeholder="항목 설명" />
+                        <Input placeholder={t('trading:purchaseOrders.itemDescription')} />
                       </Form.Item>
                     </Col>
                     <Col span={4}>
                       <Form.Item name={[name, 'cost_category']}>
-                        <Select placeholder="분류" options={COST_CATEGORIES} />
+                        <Select placeholder={t('trading:purchaseOrders.itemCategory')} options={Object.entries(COST_CATEGORY_KEYS).map(([value, key]) => ({ value, label: t(key) }))} />
                       </Form.Item>
                     </Col>
                     <Col span={3}>
                       <Form.Item name={[name, 'quantity']}>
-                        <InputNumber placeholder="수량" style={{ width: '100%' }} min={0} />
+                        <InputNumber placeholder={t('trading:purchaseOrders.itemQuantity')} style={{ width: '100%' }} min={0} />
                       </Form.Item>
                     </Col>
                     <Col span={4}>
                       <Form.Item name={[name, 'unit_price']}>
-                        <InputNumber placeholder="단가" style={{ width: '100%' }} min={0} />
+                        <InputNumber placeholder={t('trading:purchaseOrders.itemUnitPrice')} style={{ width: '100%' }} min={0} />
                       </Form.Item>
                     </Col>
                     <Col span={4}>
                       <Form.Item name={[name, 'notes']}>
-                        <Input placeholder="비고" />
+                        <Input placeholder={t('trading:purchaseOrders.itemNote')} />
                       </Form.Item>
                     </Col>
                     <Col span={2}>
-                      <Button danger size="small" onClick={() => remove(name)}>삭제</Button>
+                      <Button danger size="small" onClick={() => remove(name)}>{t('common:button.delete')}</Button>
                     </Col>
                   </Row>
                 ))}
                 <Button type="dashed" onClick={() => add({ quantity: 1, currency: 'VND' })}
                   block icon={<PlusOutlined />}>
-                  항목 추가
+                  {t('trading:purchaseOrders.addItem')}
                 </Button>
               </>
             )}
@@ -419,7 +421,7 @@ const PurchaseOrdersPage: React.FC = () => {
 
       {/* 상세 모달 */}
       <Modal
-        title={`매입주문 상세 — ${detailData?.po_number || ''}`}
+        title={`${t('trading:purchaseOrders.detailTitle')} — ${detailData?.po_number || ''}`}
         open={detailOpen}
         onCancel={() => { setDetailOpen(false); setDetailData(null); }}
         footer={null}
@@ -428,43 +430,43 @@ const PurchaseOrdersPage: React.FC = () => {
         {detailData && (
           <>
             <Descriptions bordered size="small" column={2}>
-              <Descriptions.Item label="PO No.">{detailData.po_number}</Descriptions.Item>
-              <Descriptions.Item label="공급사">{detailData.supplier_name}</Descriptions.Item>
-              <Descriptions.Item label="서비스">{detailData.service_type}</Descriptions.Item>
-              <Descriptions.Item label="Invoice">{detailData.invoice_no}</Descriptions.Item>
-              <Descriptions.Item label="금액">
+              <Descriptions.Item label={t('trading:purchaseOrders.columnPoNumber')}>{detailData.po_number}</Descriptions.Item>
+              <Descriptions.Item label={t('trading:purchaseOrders.columnSupplier')}>{detailData.supplier_name}</Descriptions.Item>
+              <Descriptions.Item label={t('trading:purchaseOrders.columnService')}>{detailData.service_type}</Descriptions.Item>
+              <Descriptions.Item label={t('trading:purchaseOrders.columnInvoice')}>{detailData.invoice_no}</Descriptions.Item>
+              <Descriptions.Item label={t('trading:purchaseOrders.columnAmount')}>
                 {Number(detailData.total_amount).toLocaleString()} {detailData.currency}
               </Descriptions.Item>
-              <Descriptions.Item label="상태">
+              <Descriptions.Item label={t('trading:purchaseOrders.columnStatus')}>
                 <Tag color={STATUS_COLORS[detailData.status]}>{detailData.status}</Tag>
               </Descriptions.Item>
-              <Descriptions.Item label="결제">
+              <Descriptions.Item label={t('trading:purchaseOrders.columnPayment')}>
                 <Tag color={PAYMENT_COLORS[detailData.payment_status]}>{detailData.payment_status}</Tag>
               </Descriptions.Item>
-              <Descriptions.Item label="Shipment Ref">{detailData.mssql_shipment_ref || '-'}</Descriptions.Item>
+              <Descriptions.Item label={t('trading:purchaseOrders.formShipmentRef')}>{detailData.mssql_shipment_ref || '-'}</Descriptions.Item>
               {detailData.notes && (
-                <Descriptions.Item label="메모" span={2}>{detailData.notes}</Descriptions.Item>
+                <Descriptions.Item label={t('trading:purchaseOrders.formMemo')} span={2}>{detailData.notes}</Descriptions.Item>
               )}
             </Descriptions>
 
             {detailData.items.length > 0 && (
               <>
-                <Divider>상세 항목 ({detailData.items.length}건)</Divider>
+                <Divider>{t('trading:purchaseOrders.detailItemsCount', { count: detailData.items.length })}</Divider>
                 <Table
                   dataSource={detailData.items}
                   rowKey="item_id"
                   size="small"
                   pagination={false}
                   columns={[
-                    { title: '항목', dataIndex: 'description', width: 200 },
-                    { title: '분류', dataIndex: 'cost_category', width: 80,
+                    { title: t('trading:purchaseOrders.itemDescription'), dataIndex: 'description', width: 200 },
+                    { title: t('trading:purchaseOrders.itemCategory'), dataIndex: 'cost_category', width: 80,
                       render: (v: string) => v ? <Tag>{v}</Tag> : null },
-                    { title: '수량', dataIndex: 'quantity', width: 80, align: 'right' as const },
-                    { title: '단가', dataIndex: 'unit_price', width: 120, align: 'right' as const,
+                    { title: t('trading:purchaseOrders.itemQuantity'), dataIndex: 'quantity', width: 80, align: 'right' as const },
+                    { title: t('trading:purchaseOrders.itemUnitPrice'), dataIndex: 'unit_price', width: 120, align: 'right' as const,
                       render: (v: number) => Number(v).toLocaleString() },
-                    { title: '금액', dataIndex: 'amount', width: 120, align: 'right' as const,
+                    { title: t('trading:purchaseOrders.itemAmount'), dataIndex: 'amount', width: 120, align: 'right' as const,
                       render: (v: number) => Number(v).toLocaleString() },
-                    { title: '비고', dataIndex: 'notes', width: 150 },
+                    { title: t('trading:purchaseOrders.itemNote'), dataIndex: 'notes', width: 150 },
                   ]}
                 />
               </>

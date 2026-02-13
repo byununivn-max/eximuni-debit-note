@@ -3,6 +3,7 @@ import {
   Row, Col, Card, Typography, Table, Spin, Select, Tag,
 } from 'antd';
 import { Bar } from '@ant-design/charts';
+import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 
 const { Title } = Typography;
@@ -20,12 +21,8 @@ interface MonthlyItem {
   profit: number;
 }
 
-const MONTH_LABELS = [
-  '', '1월', '2월', '3월', '4월', '5월', '6월',
-  '7월', '8월', '9월', '10월', '11월', '12월',
-];
-
 const ProfitDashboardPage: React.FC = () => {
+  const { t } = useTranslation(['analytics', 'common']);
   const [loading, setLoading] = useState(true);
   const [customers, setCustomers] = useState<CustomerItem[]>([]);
   const [monthly, setMonthly] = useState<MonthlyItem[]>([]);
@@ -88,21 +85,21 @@ const ProfitDashboardPage: React.FC = () => {
   // 월별 수익성 테이블
   const monthlyColumns = [
     {
-      title: '월', key: 'month', width: 70, align: 'center' as const,
-      render: (_: any, r: MonthlyItem) => MONTH_LABELS[r.month],
+      title: t('analytics:profitDashboard.columnMonth'), key: 'month', width: 70, align: 'center' as const,
+      render: (_: any, r: MonthlyItem) => t(`common:month.${r.month}`),
     },
     {
-      title: '매출 (VND)', dataIndex: 'selling', key: 'selling',
+      title: t('analytics:profitDashboard.columnSellingVnd'), dataIndex: 'selling', key: 'selling',
       width: 150, align: 'right' as const,
       render: (v: number) => v ? Number(v).toLocaleString() : '-',
     },
     {
-      title: '매입 (VND)', dataIndex: 'buying', key: 'buying',
+      title: t('analytics:profitDashboard.columnBuyingVnd'), dataIndex: 'buying', key: 'buying',
       width: 150, align: 'right' as const,
       render: (v: number) => v ? Number(v).toLocaleString() : '-',
     },
     {
-      title: '영업이익 (VND)', dataIndex: 'profit', key: 'profit',
+      title: t('analytics:profitDashboard.columnProfitVnd'), dataIndex: 'profit', key: 'profit',
       width: 150, align: 'right' as const,
       render: (v: number) => (
         <span style={{ color: v >= 0 ? '#52c41a' : '#ff4d4f' }}>
@@ -111,7 +108,7 @@ const ProfitDashboardPage: React.FC = () => {
       ),
     },
     {
-      title: 'GP 마진', key: 'margin', width: 100, align: 'center' as const,
+      title: t('analytics:profitDashboard.columnGpMargin'), key: 'margin', width: 100, align: 'center' as const,
       render: (_: any, r: MonthlyItem) => {
         if (!r.selling) return '-';
         const margin = ((r.profit / r.selling) * 100).toFixed(1);
@@ -124,20 +121,20 @@ const ProfitDashboardPage: React.FC = () => {
   // 고객별 테이블
   const customerColumns = [
     {
-      title: '순위', key: 'rank', width: 60, align: 'center' as const,
+      title: t('analytics:profitDashboard.columnRank'), key: 'rank', width: 60, align: 'center' as const,
       render: (_: any, __: any, idx: number) => idx + 1,
     },
     {
-      title: '고객명', dataIndex: 'customer_name', key: 'name',
+      title: t('analytics:profitDashboard.columnCustomer'), dataIndex: 'customer_name', key: 'name',
       ellipsis: true,
     },
     {
-      title: '매출 (VND)', dataIndex: 'total_vnd', key: 'total',
+      title: t('analytics:profitDashboard.columnSellingVnd'), dataIndex: 'total_vnd', key: 'total',
       width: 160, align: 'right' as const,
       render: (v: number) => Number(v).toLocaleString(),
     },
     {
-      title: '건수', dataIndex: 'count', key: 'count',
+      title: t('analytics:profitDashboard.columnCount'), dataIndex: 'count', key: 'count',
       width: 70, align: 'center' as const,
     },
   ];
@@ -150,7 +147,7 @@ const ProfitDashboardPage: React.FC = () => {
         style={{ marginBottom: 16 }}
       >
         <Col>
-          <Title level={4} style={{ margin: 0 }}>수익성 분석</Title>
+          <Title level={4} style={{ margin: 0 }}>{t('analytics:profitDashboard.title')}</Title>
         </Col>
         <Col>
           <Select
@@ -178,7 +175,7 @@ const ProfitDashboardPage: React.FC = () => {
 
       {/* 월별 수익성 */}
       <Card
-        title={`${year}년 월별 수익성`}
+        title={t('analytics:profitDashboard.monthlyTitle', { year })}
         size="small"
         style={{ marginBottom: 24 }}
       >
@@ -200,7 +197,7 @@ const ProfitDashboardPage: React.FC = () => {
                 style={{ fontWeight: 'bold' }}
               >
                 <Table.Summary.Cell index={0} align="center">
-                  합계
+                  {t('common:table.total')}
                 </Table.Summary.Cell>
                 <Table.Summary.Cell index={1} align="right">
                   {totSell.toLocaleString()}
@@ -232,7 +229,7 @@ const ProfitDashboardPage: React.FC = () => {
         {/* 고객별 매출 차트 */}
         <Col span={12}>
           <Card
-            title={`고객별 매출 TOP ${limit}`}
+            title={t('analytics:profitDashboard.customerTopChart', { limit })}
             size="small"
           >
             <div style={{ height: Math.max(300, customers.length * 28) }}>
@@ -244,7 +241,7 @@ const ProfitDashboardPage: React.FC = () => {
         {/* 고객별 매출 테이블 */}
         <Col span={12}>
           <Card
-            title={`고객별 매출 상세 (${customers.length}건)`}
+            title={t('analytics:profitDashboard.customerDetail', { count: customers.length })}
             size="small"
           >
             <Table

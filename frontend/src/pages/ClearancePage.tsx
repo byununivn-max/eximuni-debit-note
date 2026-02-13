@@ -5,6 +5,7 @@ import {
 } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
+import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 import type {
   MssqlSchemeClearance, MssqlClearanceDetail, PaginatedResponse,
@@ -13,43 +14,20 @@ import type {
 const { Title } = Typography;
 const { RangePicker } = DatePicker;
 
-/** 비용 항목 라벨 매핑 (베트남어 컬럼명 -> 한국어) */
-const COST_LABELS: Record<string, string> = {
-  phi_thong_quan: '통관 수수료',
-  phi_mo_tk_ngoai_gio: '시간외 개장 수수료',
-  phi_sua_tk: '신고서 수정 수수료',
-  phi_huy_tk: '신고서 취소 수수료',
-  phi_kiem_hoa: '검사 수수료',
-  phi_khai_hoa_chat: '화학물 신고 수수료',
-  phi_gp_nk_tien_chat: '전구물질 허가 수수료',
-  phi_khac_inland: '기타 내륙 수수료',
-  phi_van_chuyen: '운송비',
-  phi_giao_hang_nhanh: '특급 배송비',
-  phi_luu_cont: '컨테이너 보관료',
-  phi_do_cont_tuyen_dai: '장거리 컨테이너비',
-  phi_nang: 'Lift On',
-  phi_ha: 'Lift Off',
-  phi_luu_kho: '창고 보관료',
-  phi_nhan_cong: '인건비',
-  phi_chung_tu: '서류 수수료',
-  phi_do_hang: '하역비',
-  of_af: 'OF/AF',
-  phi_giao_tai_xuong: '공장 배송비',
-  phi_giao_tai_diem_chi_dinh: '지정지 배송비',
-  phi_xu_ly_hang_hoa: '화물 처리비',
-  phu_phi_xang_dau: '유류 할증료',
-  phu_phi_an_ninh: '보안 할증료',
-  phi_soi_chieu: 'X-ray 검사비',
-  phi_bao_hiem_hang_hoa: '화물 보험료',
-  phi_tach_bill: 'B/L 분할 수수료',
-  phi_khac_local: '기타 Local',
-  phi_nang_pay_on: 'Lift On (Pay-on)',
-  phi_ha_payon: 'Lift Off (Pay-on)',
-  phi_local: 'Local Charges',
-  phi_khac_chi_ho: '기타 대납 수수료',
-};
+/** 비용 항목 키 목록 (베트남어 컬럼명 → i18n 키) */
+const COST_LABEL_KEYS = [
+  'phi_thong_quan', 'phi_mo_tk_ngoai_gio', 'phi_sua_tk', 'phi_huy_tk',
+  'phi_kiem_hoa', 'phi_khai_hoa_chat', 'phi_gp_nk_tien_chat', 'phi_khac_inland',
+  'phi_van_chuyen', 'phi_giao_hang_nhanh', 'phi_luu_cont', 'phi_do_cont_tuyen_dai',
+  'phi_nang', 'phi_ha', 'phi_luu_kho', 'phi_nhan_cong', 'phi_chung_tu', 'phi_do_hang',
+  'of_af', 'phi_giao_tai_xuong', 'phi_giao_tai_diem_chi_dinh', 'phi_xu_ly_hang_hoa',
+  'phu_phi_xang_dau', 'phu_phi_an_ninh', 'phi_soi_chieu', 'phi_bao_hiem_hang_hoa',
+  'phi_tach_bill', 'phi_khac_local', 'phi_nang_pay_on', 'phi_ha_payon',
+  'phi_local', 'phi_khac_chi_ho',
+] as const;
 
 const ClearancePage: React.FC = () => {
+  const { t } = useTranslation(['operations', 'common']);
   const [data, setData] = useState<MssqlSchemeClearance[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -82,7 +60,7 @@ const ClearancePage: React.FC = () => {
       setData(res.data.items);
       setTotal(res.data.total);
     } catch (err: any) {
-      message.error(err.response?.data?.detail || '통관 목록 조회 실패');
+      message.error(err.response?.data?.detail || t('operations:clearance.fetchFailed'));
     } finally {
       setLoading(false);
     }
@@ -92,7 +70,7 @@ const ClearancePage: React.FC = () => {
 
   const showCostDetail = async (record: MssqlSchemeClearance) => {
     if (!record.id_clearance) {
-      message.warning('비용 정보가 연결되지 않았습니다');
+      message.warning(t('common:message.noCostInfo'));
       return;
     }
     setCostLoading(true);
@@ -103,7 +81,7 @@ const ClearancePage: React.FC = () => {
       );
       setCostDetail(res.data);
     } catch (err: any) {
-      message.error(err.response?.data?.detail || '비용 상세 조회 실패');
+      message.error(err.response?.data?.detail || t('operations:clearance.costFetchFailed'));
       setCostModalOpen(false);
     } finally {
       setCostLoading(false);
@@ -111,23 +89,23 @@ const ClearancePage: React.FC = () => {
   };
 
   const columns = [
-    { title: 'ID', dataIndex: 'id_scheme_cd', key: 'id', width: 70 },
-    { title: 'Invoice', dataIndex: 'invoice', key: 'invoice', width: 140 },
-    { title: '수출입', dataIndex: 'im_ex', key: 'im_ex', width: 80,
+    { title: t('operations:clearance.columnId'), dataIndex: 'id_scheme_cd', key: 'id', width: 70 },
+    { title: t('operations:clearance.columnInvoice'), dataIndex: 'invoice', key: 'invoice', width: 140 },
+    { title: t('operations:clearance.columnImEx'), dataIndex: 'im_ex', key: 'im_ex', width: 80,
       render: (v: string) => v ? (
         <Tag color={v === 'IM' ? 'blue' : 'orange'}>{v}</Tag>
       ) : null,
     },
-    { title: '고객사', dataIndex: 'company', key: 'company', width: 200 },
-    { title: '도착일', dataIndex: 'arrival_date', key: 'arrival', width: 110 },
-    { title: 'HBL', dataIndex: 'hbl', key: 'hbl', width: 140 },
-    { title: '선박', dataIndex: 'vessel', key: 'vessel', width: 140 },
-    { title: '판정', dataIndex: 'phan_luong', key: 'phan_luong', width: 80 },
-    { title: '통관번호', dataIndex: 'so_tk', key: 'so_tk', width: 130 },
-    { title: '비용', key: 'costs', width: 80,
+    { title: t('operations:clearance.columnClient'), dataIndex: 'company', key: 'company', width: 200 },
+    { title: t('operations:clearance.columnArrival'), dataIndex: 'arrival_date', key: 'arrival', width: 110 },
+    { title: t('operations:clearance.columnHbl'), dataIndex: 'hbl', key: 'hbl', width: 140 },
+    { title: t('operations:clearance.columnVessel'), dataIndex: 'vessel', key: 'vessel', width: 140 },
+    { title: t('operations:clearance.columnJudgment'), dataIndex: 'phan_luong', key: 'phan_luong', width: 80 },
+    { title: t('operations:clearance.columnCustomsNo'), dataIndex: 'so_tk', key: 'so_tk', width: 130 },
+    { title: t('operations:clearance.columnCost'), key: 'costs', width: 80,
       render: (_: any, r: MssqlSchemeClearance) => (
         <a onClick={() => showCostDetail(r)}>
-          {r.id_clearance ? '상세' : '-'}
+          {r.id_clearance ? t('operations:clearance.costDetail') : '-'}
         </a>
       ),
     },
@@ -137,14 +115,14 @@ const ClearancePage: React.FC = () => {
   const renderCostItems = () => {
     if (!costDetail) return null;
     const items: { label: string; value: number }[] = [];
-    for (const [key, label] of Object.entries(COST_LABELS)) {
+    for (const key of COST_LABEL_KEYS) {
       const val = (costDetail as any)[key];
       if (val && val > 0) {
-        items.push({ label, value: val });
+        items.push({ label: t(`operations:clearance.costLabels.${key}`), value: val });
       }
     }
     if (items.length === 0) {
-      return <p>등록된 비용 항목이 없습니다.</p>;
+      return <p>{t('common:message.noCostItems')}</p>;
     }
     return (
       <Descriptions bordered size="small" column={2}>
@@ -159,13 +137,13 @@ const ClearancePage: React.FC = () => {
 
   return (
     <div>
-      <Title level={4} style={{ marginBottom: 16 }}>CD 통관 관리</Title>
+      <Title level={4} style={{ marginBottom: 16 }}>{t('operations:clearance.title')}</Title>
 
       <Card size="small" style={{ marginBottom: 16 }}>
         <Row gutter={16}>
           <Col span={6}>
             <Input
-              placeholder="고객사 검색"
+              placeholder={t('operations:clearance.searchPlaceholder')}
               prefix={<SearchOutlined />}
               allowClear
               onPressEnter={(e) => {
@@ -179,13 +157,13 @@ const ClearancePage: React.FC = () => {
           </Col>
           <Col span={4}>
             <Select
-              placeholder="수출입"
+              placeholder={t('operations:clearance.columnImEx')}
               allowClear
               style={{ width: '100%' }}
               onChange={(v) => { setImExFilter(v); setPage(1); }}
               options={[
-                { value: 'IM', label: 'IM (수입)' },
-                { value: 'EX', label: 'EX (수출)' },
+                { value: 'IM', label: t('common:imEx.import') },
+                { value: 'EX', label: t('common:imEx.export') },
               ]}
             />
           </Col>
@@ -220,7 +198,7 @@ const ClearancePage: React.FC = () => {
       </Card>
 
       <Modal
-        title="통관 비용 상세"
+        title={t('operations:clearance.costDetailTitle')}
         open={costModalOpen}
         onCancel={() => { setCostModalOpen(false); setCostDetail(null); }}
         footer={null}
@@ -231,7 +209,7 @@ const ClearancePage: React.FC = () => {
           <>
             <p style={{ marginBottom: 12, color: '#888' }}>
               Clearance ID: {costDetail.id_clearance}
-              {costDetail.ghi_chu && ` | 비고: ${costDetail.ghi_chu}`}
+              {costDetail.ghi_chu && ` | ${t('operations:clearance.remark')}: ${costDetail.ghi_chu}`}
             </p>
             {renderCostItems()}
           </>

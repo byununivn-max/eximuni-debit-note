@@ -6,6 +6,7 @@ import {
 import {
   ContainerOutlined, SearchOutlined,
 } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 
 const { Title, Text } = Typography;
@@ -22,11 +23,6 @@ interface ShipmentProfit {
   gp_margin: number;
 }
 
-const MONTH_LABELS = [
-  '', '1월', '2월', '3월', '4월', '5월', '6월',
-  '7월', '8월', '9월', '10월', '11월', '12월',
-];
-
 const TYPE_COLOR: Record<string, string> = {
   clearance: 'blue',
   ops: 'green',
@@ -40,6 +36,7 @@ const fmtNum = (v: number) => {
 };
 
 const ShipmentProfitPage: React.FC = () => {
+  const { t } = useTranslation(['analytics', 'common']);
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState<ShipmentProfit[]>([]);
   const [total, setTotal] = useState(0);
@@ -70,7 +67,7 @@ const ShipmentProfitPage: React.FC = () => {
 
   const columns = [
     {
-      title: '유형', dataIndex: 'record_type', key: 'type',
+      title: t('analytics:shipmentProfit.columnType'), dataIndex: 'record_type', key: 'type',
       width: 80, align: 'center' as const,
       render: (v: string) => (
         <Tag color={TYPE_COLOR[v] || 'default'}>
@@ -79,34 +76,34 @@ const ShipmentProfitPage: React.FC = () => {
       ),
     },
     {
-      title: '고객명', dataIndex: 'customer_name', key: 'name',
+      title: t('analytics:shipmentProfit.columnCustomer'), dataIndex: 'customer_name', key: 'name',
       ellipsis: true, width: 180,
       render: (v: string) => <Text strong>{v}</Text>,
     },
     {
-      title: 'Invoice', dataIndex: 'invoice_no', key: 'inv',
+      title: t('analytics:shipmentProfit.columnInvoice'), dataIndex: 'invoice_no', key: 'inv',
       ellipsis: true, width: 140,
       render: (v: string | null) => v || '-',
     },
     {
-      title: '일자', dataIndex: 'service_date', key: 'date',
+      title: t('analytics:shipmentProfit.columnDate'), dataIndex: 'service_date', key: 'date',
       width: 100,
       render: (v: string | null) => v || '-',
     },
     {
-      title: '매출', dataIndex: 'selling_amount', key: 'sell',
+      title: t('analytics:shipmentProfit.columnSelling'), dataIndex: 'selling_amount', key: 'sell',
       width: 130, align: 'right' as const,
       render: fmtNum,
     },
     {
-      title: '매입', dataIndex: 'buying_amount', key: 'buy',
+      title: t('analytics:shipmentProfit.columnBuying'), dataIndex: 'buying_amount', key: 'buy',
       width: 130, align: 'right' as const,
       render: (v: number) => (
         <Text type="danger">{fmtNum(v)}</Text>
       ),
     },
     {
-      title: 'GP', dataIndex: 'gross_profit', key: 'gp',
+      title: t('analytics:shipmentProfit.columnGp'), dataIndex: 'gross_profit', key: 'gp',
       width: 130, align: 'right' as const,
       render: (v: number) => (
         <Text style={{ color: v >= 0 ? '#3f8600' : '#cf1322', fontWeight: 600 }}>
@@ -115,7 +112,7 @@ const ShipmentProfitPage: React.FC = () => {
       ),
     },
     {
-      title: 'GP율', dataIndex: 'gp_margin', key: 'gpm',
+      title: t('analytics:shipmentProfit.columnGpRate'), dataIndex: 'gp_margin', key: 'gpm',
       width: 80, align: 'center' as const,
       render: (v: number) => (
         <Tag color={v >= 30 ? 'green' : v >= 15 ? 'orange' : v >= 0 ? 'default' : 'red'}>
@@ -135,7 +132,7 @@ const ShipmentProfitPage: React.FC = () => {
         <Col>
           <Title level={4} style={{ margin: 0 }}>
             <ContainerOutlined style={{ marginRight: 8 }} />
-            건별 수익성 분석 ({total}건)
+            {t('analytics:shipmentProfit.titleCount', { count: total })}
           </Title>
         </Col>
         <Col>
@@ -144,7 +141,7 @@ const ShipmentProfitPage: React.FC = () => {
               value={year}
               onChange={v => { setYear(v); setPage(1); }}
               allowClear
-              placeholder="연도"
+              placeholder={t('common:filter.year')}
               style={{ width: 100 }}
               options={[2024, 2025, 2026].map(y => ({ value: y, label: String(y) }))}
             />
@@ -152,10 +149,10 @@ const ShipmentProfitPage: React.FC = () => {
               value={month}
               onChange={v => { setMonth(v); setPage(1); }}
               allowClear
-              placeholder="월"
+              placeholder={t('common:filter.month')}
               style={{ width: 90 }}
               options={Array.from({ length: 12 }, (_, i) => ({
-                value: i + 1, label: MONTH_LABELS[i + 1],
+                value: i + 1, label: t(`common:month.${i + 1}`),
               }))}
             />
           </Space>
@@ -164,7 +161,7 @@ const ShipmentProfitPage: React.FC = () => {
 
       <Space style={{ marginBottom: 16 }}>
         <Input
-          placeholder="고객명 검색"
+          placeholder={t('analytics:shipmentProfit.searchPlaceholder')}
           prefix={<SearchOutlined />}
           value={search}
           onChange={e => { setSearch(e.target.value); setPage(1); }}
@@ -189,7 +186,7 @@ const ShipmentProfitPage: React.FC = () => {
             total={total}
             pageSize={50}
             onChange={setPage}
-            showTotal={t => `전체 ${t}건`}
+            showTotal={total => t('common:pagination.totalAll', { count: total })}
           />
         </div>
       </Card>

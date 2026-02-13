@@ -8,6 +8,7 @@ import {
   AccountBookOutlined,
 } from '@ant-design/icons';
 import type { DataNode } from 'antd/es/tree';
+import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 
 const { Title } = Typography;
@@ -62,15 +63,10 @@ const TYPE_COLOR: Record<string, string> = {
   expense: 'orange',
 };
 
-const TYPE_LABEL: Record<string, string> = {
-  asset: '자산',
-  liability: '부채',
-  equity: '자본',
-  revenue: '수익',
-  expense: '비용',
-};
+const TYPE_KEYS = ['asset', 'liability', 'equity', 'revenue', 'expense'];
 
 const ChartOfAccountsPage: React.FC = () => {
+  const { t } = useTranslation(['accounting', 'common']);
   const [loading, setLoading] = useState(true);
   const [accounts, setAccounts] = useState<CoAItem[]>([]);
   const [treeData, setTreeData] = useState<CoATreeNode[]>([]);
@@ -113,12 +109,19 @@ const ChartOfAccountsPage: React.FC = () => {
       const coa = res.data.chart_of_accounts;
       const cc = res.data.cost_centers;
       message.success(
-        `시딩 완료: 계정 ${coa.created}건 생성, ${coa.skipped}건 스킵 / ` +
-        `비용센터 ${cc.created}건 생성, ${cc.skipped}건 스킵`,
+        t('accounting:coa.seedSuccess', {
+          coaCreated: coa.created,
+          coaSkipped: coa.skipped,
+          ccCreated: cc.created,
+          ccSkipped: cc.skipped,
+          defaultValue:
+            `시딩 완료: 계정 ${coa.created}건 생성, ${coa.skipped}건 스킵 / ` +
+            `비용센터 ${cc.created}건 생성, ${cc.skipped}건 스킵`,
+        }),
       );
       fetchData();
     } catch (err: any) {
-      message.error(err.response?.data?.detail || '시딩 실패');
+      message.error(err.response?.data?.detail || t('common:message.failed'));
     } finally {
       setSeeding(false);
     }
@@ -144,55 +147,55 @@ const ChartOfAccountsPage: React.FC = () => {
 
   const columns = [
     {
-      title: '코드', dataIndex: 'account_code', key: 'code',
+      title: t('accounting:coa.columnCode'), dataIndex: 'account_code', key: 'code',
       width: 100, fixed: 'left' as const,
       render: (v: string) => <strong>{v}</strong>,
     },
     {
-      title: '한국어', dataIndex: 'account_name_kr', key: 'kr',
+      title: t('accounting:coa.columnKorean'), dataIndex: 'account_name_kr', key: 'kr',
       ellipsis: true,
     },
     {
-      title: 'English', dataIndex: 'account_name_en', key: 'en',
+      title: t('accounting:coa.columnEnglish'), dataIndex: 'account_name_en', key: 'en',
       ellipsis: true,
     },
     {
-      title: 'Tiếng Việt', dataIndex: 'account_name_vn', key: 'vn',
+      title: t('accounting:coa.columnVietnamese'), dataIndex: 'account_name_vn', key: 'vn',
       ellipsis: true,
     },
     {
-      title: '유형', dataIndex: 'account_type', key: 'type',
+      title: t('accounting:coa.columnType'), dataIndex: 'account_type', key: 'type',
       width: 80, align: 'center' as const,
       render: (v: string) => (
-        <Tag color={TYPE_COLOR[v]}>{TYPE_LABEL[v]}</Tag>
+        <Tag color={TYPE_COLOR[v]}>{t(`common:accountType.${v}`)}</Tag>
       ),
     },
     {
-      title: '잔액방향', dataIndex: 'normal_balance', key: 'balance',
+      title: t('accounting:coa.columnBalance'), dataIndex: 'normal_balance', key: 'balance',
       width: 90, align: 'center' as const,
       render: (v: string) => (
         <Tag color={v === 'debit' ? 'blue' : 'red'}>
-          {v === 'debit' ? '차변' : '대변'}
+          {t(`common:balanceDirection.${v}`)}
         </Tag>
       ),
     },
     {
-      title: 'SmartBooks', dataIndex: 'smartbooks_mapped', key: 'sb',
+      title: t('accounting:coa.columnSmartbooks'), dataIndex: 'smartbooks_mapped', key: 'sb',
       width: 100, align: 'center' as const,
-      render: (v: boolean) => v ? <Tag color="green">매핑됨</Tag> : '-',
+      render: (v: boolean) => v ? <Tag color="green">{t('common:status.mapped')}</Tag> : '-',
     },
   ];
 
   const ccColumns = [
     {
-      title: '코드', dataIndex: 'center_code', key: 'code', width: 120,
+      title: t('accounting:coa.columnCode'), dataIndex: 'center_code', key: 'code', width: 120,
       render: (v: string) => <strong>{v}</strong>,
     },
-    { title: '한국어', dataIndex: 'center_name_kr', key: 'kr' },
-    { title: 'English', dataIndex: 'center_name_en', key: 'en' },
-    { title: 'Tiếng Việt', dataIndex: 'center_name_vn', key: 'vn' },
+    { title: t('accounting:coa.columnKorean'), dataIndex: 'center_name_kr', key: 'kr' },
+    { title: t('accounting:coa.columnEnglish'), dataIndex: 'center_name_en', key: 'en' },
+    { title: t('accounting:coa.columnVietnamese'), dataIndex: 'center_name_vn', key: 'vn' },
     {
-      title: '유형', dataIndex: 'center_type', key: 'type', width: 100,
+      title: t('accounting:coa.columnType'), dataIndex: 'center_type', key: 'type', width: 100,
       align: 'center' as const,
       render: (v: string) => (
         <Tag color={v === 'logistic' ? 'blue' : v === 'general' ? 'green' : 'default'}>
@@ -214,21 +217,21 @@ const ChartOfAccountsPage: React.FC = () => {
         <Col>
           <Title level={4} style={{ margin: 0 }}>
             <AccountBookOutlined style={{ marginRight: 8 }} />
-            계정과목 관리
+            {t('accounting:coa.title')}
           </Title>
         </Col>
         <Col>
           <Popconfirm
-            title="SmartBooks 54개 계정 + 비용센터를 시딩하시겠습니까?"
+            title={t('accounting:coa.seedConfirm')}
             onConfirm={handleSeed}
-            okText="실행"
-            cancelText="취소"
+            okText={t('common:button.confirm')}
+            cancelText={t('common:button.cancel')}
           >
             <Button
               icon={<SyncOutlined spin={seeding} />}
               loading={seeding}
             >
-              SmartBooks 시딩
+              {t('accounting:coa.seedButton')}
             </Button>
           </Popconfirm>
         </Col>
@@ -239,14 +242,14 @@ const ChartOfAccountsPage: React.FC = () => {
         <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
           <Col xs={12} sm={8} lg={4}>
             <Card size="small">
-              <Statistic title="전체 계정" value={summary.total} />
+              <Statistic title={t('accounting:coa.totalAccounts')} value={summary.total} />
             </Card>
           </Col>
-          {Object.entries(TYPE_LABEL).map(([key, label]) => (
+          {TYPE_KEYS.map((key) => (
             <Col xs={12} sm={8} lg={4} key={key}>
               <Card size="small">
                 <Statistic
-                  title={label}
+                  title={t(`common:accountType.${key}`)}
                   value={summary.by_type[key] || 0}
                   valueStyle={{ color: TYPE_COLOR[key] === 'blue' ? '#1890ff' : undefined }}
                 />
@@ -261,12 +264,12 @@ const ChartOfAccountsPage: React.FC = () => {
         items={[
           {
             key: 'table',
-            label: '테이블 보기',
+            label: t('accounting:coa.tableView'),
             children: (
               <>
                 <Space style={{ marginBottom: 16 }}>
                   <Input
-                    placeholder="코드 또는 이름 검색"
+                    placeholder={t('accounting:coa.searchPlaceholder')}
                     prefix={<SearchOutlined />}
                     value={search}
                     onChange={e => setSearch(e.target.value)}
@@ -274,13 +277,13 @@ const ChartOfAccountsPage: React.FC = () => {
                     style={{ width: 250 }}
                   />
                   <Select
-                    placeholder="유형 필터"
+                    placeholder={t('accounting:coa.typeFilter')}
                     value={typeFilter}
                     onChange={setTypeFilter}
                     allowClear
                     style={{ width: 130 }}
-                    options={Object.entries(TYPE_LABEL).map(([k, v]) => ({
-                      value: k, label: v,
+                    options={TYPE_KEYS.map((k) => ({
+                      value: k, label: t(`common:accountType.${k}`),
                     }))}
                   />
                 </Space>
@@ -298,7 +301,7 @@ const ChartOfAccountsPage: React.FC = () => {
           },
           {
             key: 'tree',
-            label: '트리 보기',
+            label: t('accounting:coa.treeView'),
             children: (
               <Card size="small">
                 {treeData.length > 0 ? (
@@ -309,7 +312,7 @@ const ChartOfAccountsPage: React.FC = () => {
                   />
                 ) : (
                   <div style={{ textAlign: 'center', padding: 40, color: '#999' }}>
-                    계정과목이 없습니다. SmartBooks 시딩을 실행하세요.
+                    {t('accounting:coa.noAccounts')}
                   </div>
                 )}
               </Card>
@@ -317,7 +320,7 @@ const ChartOfAccountsPage: React.FC = () => {
           },
           {
             key: 'cost-centers',
-            label: '비용센터',
+            label: t('accounting:coa.costCenters'),
             children: (
               <Table
                 columns={ccColumns}

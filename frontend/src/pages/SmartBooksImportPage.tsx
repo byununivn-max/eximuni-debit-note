@@ -8,6 +8,7 @@ import {
   FileExcelOutlined, DatabaseOutlined,
 } from '@ant-design/icons';
 import type { UploadFile } from 'antd';
+import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 
 const { Title, Text } = Typography;
@@ -33,6 +34,7 @@ interface ImportResult {
 }
 
 const SmartBooksImportPage: React.FC = () => {
+  const { t } = useTranslation(['accounting', 'common']);
   const [step, setStep] = useState(0);
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [previewData, setPreviewData] = useState<PreviewRow[]>([]);
@@ -50,15 +52,15 @@ const SmartBooksImportPage: React.FC = () => {
       const rows = JSON.parse(text);
 
       if (!Array.isArray(rows) || rows.length === 0) {
-        message.error('유효한 JSON 배열 형식이 아닙니다');
+        message.error('Invalid JSON array format');
         return;
       }
 
       setPreviewData(rows);
       setStep(1);
-      message.success(`${rows.length}행 파싱 완료`);
+      message.success(t('common:message.success'));
     } catch (err) {
-      message.error('파일 파싱 실패 — JSON 배열 형식으로 변환 후 업로드하세요');
+      message.error(t('common:message.importFailed'));
     } finally {
       setParsing(false);
     }
@@ -73,9 +75,9 @@ const SmartBooksImportPage: React.FC = () => {
       const res = await api.post('/api/v1/journal-entries/import-gltran', previewData);
       setResult(res.data);
       setStep(2);
-      message.success('임포트 완료');
+      message.success(t('common:message.importSuccess'));
     } catch (err: any) {
-      message.error(err.response?.data?.detail || '임포트 실패');
+      message.error(err.response?.data?.detail || t('common:message.importFailed'));
     } finally {
       setImporting(false);
     }
@@ -129,16 +131,16 @@ const SmartBooksImportPage: React.FC = () => {
     <div>
       <Title level={4} style={{ marginBottom: 16 }}>
         <DatabaseOutlined style={{ marginRight: 8 }} />
-        SmartBooks 데이터 임포트
+        {t('accounting:smartbooksImport.title')}
       </Title>
 
       <Steps
         current={step}
         style={{ marginBottom: 24 }}
         items={[
-          { title: '파일 업로드', icon: <FileExcelOutlined /> },
-          { title: '미리보기', icon: <CloudUploadOutlined /> },
-          { title: '완료', icon: <CheckCircleOutlined /> },
+          { title: t('accounting:smartbooksImport.stepUpload'), icon: <FileExcelOutlined /> },
+          { title: t('accounting:smartbooksImport.stepPreview'), icon: <CloudUploadOutlined /> },
+          { title: t('accounting:smartbooksImport.stepComplete'), icon: <CheckCircleOutlined /> },
         ]}
       />
 
@@ -149,12 +151,12 @@ const SmartBooksImportPage: React.FC = () => {
             type="info"
             showIcon
             style={{ marginBottom: 24 }}
-            message="SmartBooks GLTran 데이터 임포트"
+            message={t('accounting:smartbooksImport.alertTitle')}
             description={
               <div>
-                <p>GLTran.xlsx를 JSON 배열로 변환하여 업로드합니다.</p>
-                <p>필수 컬럼: Module, Batch Nbr, Ref Nbr, Acct Period, Account, Dr Amount, Cr Amount</p>
-                <p>선택 컬럼: Voucher Date, Description VN/EN/KR, Vendor/Customer/Employee ID, Cost Center, Invoice No 등</p>
+                <p>{t('accounting:smartbooksImport.alertDescription1')}</p>
+                <p>{t('accounting:smartbooksImport.alertDescription2')}</p>
+                <p>{t('accounting:smartbooksImport.alertDescription3')}</p>
               </div>
             }
           />
@@ -178,7 +180,7 @@ const SmartBooksImportPage: React.FC = () => {
                 size="large"
                 loading={parsing}
               >
-                GLTran JSON 파일 선택
+                {t('accounting:smartbooksImport.selectFile')}
               </Button>
             </Upload>
           </div>
@@ -191,18 +193,18 @@ const SmartBooksImportPage: React.FC = () => {
           <Row gutter={16} style={{ marginBottom: 16 }}>
             <Col span={6}>
               <Card size="small">
-                <Statistic title="전체 행" value={previewStats.totalRows} />
+                <Statistic title={t('accounting:smartbooksImport.totalRows')} value={previewStats.totalRows} />
               </Card>
             </Col>
             <Col span={6}>
               <Card size="small">
-                <Statistic title="전표 수" value={previewStats.entries} />
+                <Statistic title={t('accounting:smartbooksImport.entryCount')} value={previewStats.entries} />
               </Card>
             </Col>
             <Col span={6}>
               <Card size="small">
                 <Statistic
-                  title="차변 합계"
+                  title={t('accounting:smartbooksImport.debitTotal')}
                   value={previewStats.totalDebit}
                   formatter={(v) => Number(v).toLocaleString()}
                   valueStyle={{ fontSize: 16 }}
@@ -212,7 +214,7 @@ const SmartBooksImportPage: React.FC = () => {
             <Col span={6}>
               <Card size="small">
                 <Statistic
-                  title="대변 합계"
+                  title={t('accounting:smartbooksImport.creditTotal')}
                   value={previewStats.totalCredit}
                   formatter={(v) => Number(v).toLocaleString()}
                   valueStyle={{ fontSize: 16 }}
@@ -223,11 +225,11 @@ const SmartBooksImportPage: React.FC = () => {
 
           <Card
             size="small"
-            title={`미리보기 (${previewData.length}행)`}
+            title={t('accounting:smartbooksImport.previewTitle', { count: previewData.length })}
             extra={
               <Space>
                 <Text type="secondary">
-                  모듈: {previewStats.modules.join(', ')}
+                  {t('common:table.module')}: {previewStats.modules.join(', ')}
                 </Text>
               </Space>
             }
@@ -242,7 +244,7 @@ const SmartBooksImportPage: React.FC = () => {
             />
             {previewData.length > 100 && (
               <div style={{ textAlign: 'center', padding: 8, color: '#999' }}>
-                처음 100행만 표시됩니다 (전체: {previewData.length}행)
+                {t('accounting:smartbooksImport.previewNote', { count: previewData.length })}
               </div>
             )}
           </Card>
@@ -250,7 +252,7 @@ const SmartBooksImportPage: React.FC = () => {
           <div style={{ textAlign: 'center', marginTop: 24 }}>
             <Space>
               <Button onClick={handleReset}>
-                취소
+                {t('common:button.cancel')}
               </Button>
               <Button
                 type="primary"
@@ -259,7 +261,7 @@ const SmartBooksImportPage: React.FC = () => {
                 onClick={handleImport}
                 size="large"
               >
-                {previewStats.entries}건 전표 임포트 실행
+                {t('accounting:smartbooksImport.importButton', { count: previewStats.entries })}
               </Button>
             </Space>
           </div>
@@ -271,25 +273,25 @@ const SmartBooksImportPage: React.FC = () => {
         <Card>
           <Result
             status={result.errors.length === 0 ? 'success' : 'warning'}
-            title="SmartBooks 임포트 완료"
-            subTitle={
-              `전표 ${result.entries_created}건, ` +
-              `라인 ${result.lines_created}건 생성 ` +
-              `(${result.skipped}건 스킵)`
-            }
+            title={t('accounting:smartbooksImport.importComplete')}
+            subTitle={t('accounting:smartbooksImport.importResult', {
+              entries: result.entries_created,
+              lines: result.lines_created,
+              skipped: result.skipped,
+            })}
             extra={[
               <Button
                 key="again"
                 onClick={handleReset}
               >
-                추가 임포트
+                {t('accounting:smartbooksImport.additionalImport')}
               </Button>,
               <Button
                 key="view"
                 type="primary"
                 onClick={() => window.location.href = '/journal-entries'}
               >
-                분개전표 보기
+                {t('accounting:smartbooksImport.viewJournal')}
               </Button>,
             ]}
           />
@@ -297,7 +299,7 @@ const SmartBooksImportPage: React.FC = () => {
             <Alert
               type="warning"
               showIcon
-              message={`${result.errors.length}건 경고`}
+              message={t('accounting:smartbooksImport.warningCount', { count: result.errors.length })}
               description={
                 <ul style={{ maxHeight: 200, overflow: 'auto' }}>
                   {result.errors.map((e, i) => (

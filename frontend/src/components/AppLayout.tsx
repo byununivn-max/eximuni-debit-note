@@ -32,9 +32,11 @@ import {
   SettingOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { authService } from '../services/auth';
 import { msalEnabled } from '../msalConfig';
+import LanguageSwitcher from './LanguageSwitcher';
 
 const { Header, Sider, Content } = Layout;
 const { Text } = Typography;
@@ -44,6 +46,7 @@ const AppLayout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
+  const { t } = useTranslation('menu');
 
   const handleLogout = async () => {
     // MSAL 모드에서 로그아웃 시 MSAL 세션도 정리
@@ -102,77 +105,77 @@ const AppLayout: React.FC = () => {
     {
       key: 'grp-home',
       icon: <DashboardOutlined />,
-      label: '홈',
+      label: t('home'),
       children: [
-        { key: '/', icon: <PieChartOutlined />, label: '매출/매입 현황' },
+        { key: '/', icon: <PieChartOutlined />, label: t('salesOverview') },
       ],
     },
     {
       key: 'grp-operations',
       icon: <GlobalOutlined />,
-      label: '운영',
+      label: t('operations'),
       children: [
-        { key: '/shipments', icon: <ContainerOutlined />, label: '거래 데이터' },
-        { key: '/clearance', icon: <SafetyCertificateOutlined />, label: 'CD 통관' },
-        { key: '/ops', icon: <ToolOutlined />, label: 'Ops 운영' },
-        { key: '/co', icon: <AuditOutlined />, label: 'CO 원산지' },
+        { key: '/shipments', icon: <ContainerOutlined />, label: t('shipments') },
+        { key: '/clearance', icon: <SafetyCertificateOutlined />, label: t('clearance') },
+        { key: '/ops', icon: <ToolOutlined />, label: t('ops') },
+        { key: '/co', icon: <AuditOutlined />, label: t('co') },
       ],
     },
     {
       key: 'grp-trading',
       icon: <DollarOutlined />,
-      label: '매매 관리',
+      label: t('trading'),
       children: [
-        { key: '/selling-records', icon: <FundOutlined />, label: '매출 종합' },
-        { key: '/debit-notes', icon: <FileTextOutlined />, label: 'Debit Note' },
-        { key: '/suppliers', icon: <ShopOutlined />, label: '공급사' },
-        { key: '/purchase-orders', icon: <ShoppingCartOutlined />, label: '매입 관리' },
+        { key: '/selling-records', icon: <FundOutlined />, label: t('sellingRecords') },
+        { key: '/debit-notes', icon: <FileTextOutlined />, label: t('debitNotes') },
+        { key: '/suppliers', icon: <ShopOutlined />, label: t('suppliers') },
+        { key: '/purchase-orders', icon: <ShoppingCartOutlined />, label: t('purchaseOrders') },
       ],
     },
     {
       key: 'grp-accounting',
       icon: <AccountBookOutlined />,
-      label: '회계',
+      label: t('accounting'),
       children: [
-        { key: '/chart-of-accounts', icon: <AccountBookOutlined />, label: '계정과목' },
-        { key: '/journal-entries', icon: <BookOutlined />, label: '분개전표' },
-        { key: '/trial-balance', icon: <CalculatorOutlined />, label: '시산표' },
-        { key: '/financial-reports', icon: <SolutionOutlined />, label: '재무제표' },
-        { key: '/accounting-vendors', icon: <ShopOutlined />, label: 'AP 공급사' },
-        { key: '/accounting-customers', icon: <UserSwitchOutlined />, label: 'AR 고객' },
-        { key: '/smartbooks-import', icon: <DatabaseOutlined />, label: 'SB 임포트' },
+        { key: '/chart-of-accounts', icon: <AccountBookOutlined />, label: t('chartOfAccounts') },
+        { key: '/journal-entries', icon: <BookOutlined />, label: t('journalEntries') },
+        { key: '/trial-balance', icon: <CalculatorOutlined />, label: t('trialBalance') },
+        { key: '/financial-reports', icon: <SolutionOutlined />, label: t('financialReports') },
+        { key: '/accounting-vendors', icon: <ShopOutlined />, label: t('accountingVendors') },
+        { key: '/accounting-customers', icon: <UserSwitchOutlined />, label: t('accountingCustomers') },
+        { key: '/smartbooks-import', icon: <DatabaseOutlined />, label: t('smartbooksImport') },
       ],
     },
     {
       key: 'grp-analytics',
       icon: <BarChartOutlined />,
-      label: '분석/보고서',
+      label: t('analytics'),
       children: [
-        { key: '/pnl-dashboard', icon: <FundOutlined />, label: 'P&L 손익' },
-        { key: '/profit-dashboard', icon: <PieChartOutlined />, label: '수익성 분석' },
-        { key: '/customer-profitability', icon: <TrophyOutlined />, label: '고객 수익성' },
-        { key: '/shipment-profit', icon: <ContainerOutlined />, label: '건별 수익성' },
-        { key: '/quotation-comparison', icon: <SwapOutlined />, label: '견적-실적 비교' },
-        { key: '/cost-classifications', icon: <AppstoreOutlined />, label: '비용 분류' },
-        { key: '/monthly-cost-summary', icon: <CalculatorOutlined />, label: '월별 비용 집계' },
+        { key: '/pnl-dashboard', icon: <FundOutlined />, label: t('pnlDashboard') },
+        { key: '/profit-dashboard', icon: <PieChartOutlined />, label: t('profitDashboard') },
+        { key: '/customer-profitability', icon: <TrophyOutlined />, label: t('customerProfitability') },
+        { key: '/shipment-profit', icon: <ContainerOutlined />, label: t('shipmentProfit') },
+        { key: '/quotation-comparison', icon: <SwapOutlined />, label: t('quotationComparison') },
+        { key: '/cost-classifications', icon: <AppstoreOutlined />, label: t('costClassifications') },
+        { key: '/monthly-cost-summary', icon: <CalculatorOutlined />, label: t('monthlyCostSummary') },
       ],
     },
     {
       key: 'grp-master',
       icon: <DatabaseOutlined />,
-      label: '마스터 데이터',
+      label: t('masterData'),
       children: [
-        { key: '/clients', icon: <TeamOutlined />, label: '거래처 관리' },
-        { key: '/fiscal-periods', icon: <CalendarOutlined />, label: '회계기간' },
-        { key: '/exchange-rates', icon: <DollarOutlined />, label: '환율 관리' },
+        { key: '/clients', icon: <TeamOutlined />, label: t('clients') },
+        { key: '/fiscal-periods', icon: <CalendarOutlined />, label: t('fiscalPeriods') },
+        { key: '/exchange-rates', icon: <DollarOutlined />, label: t('exchangeRates') },
       ],
     },
     {
       key: 'grp-admin',
       icon: <SettingOutlined />,
-      label: '관리자',
+      label: t('admin'),
       children: [
-        { key: '/audit-logs', icon: <HistoryOutlined />, label: '감사 이력' },
+        { key: '/audit-logs', icon: <HistoryOutlined />, label: t('auditLogs') },
       ],
     },
   ];
@@ -213,10 +216,11 @@ const AppLayout: React.FC = () => {
             onClick={() => setCollapsed(!collapsed)}
           />
           <Space>
+            <LanguageSwitcher />
             <Tag color={roleColor}>{user?.role?.toUpperCase()}</Tag>
             <Text strong>{user?.username}</Text>
             <Button type="text" icon={<LogoutOutlined />} onClick={handleLogout}>
-              로그아웃
+              {t('common:button.logout')}
             </Button>
           </Space>
         </Header>

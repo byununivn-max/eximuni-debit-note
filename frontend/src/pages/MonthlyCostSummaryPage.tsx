@@ -6,6 +6,7 @@ import {
 import {
   BarChartOutlined, SyncOutlined,
 } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 
 const { Title, Text } = Typography;
@@ -44,23 +45,20 @@ const TYPE_COLOR: Record<string, string> = {
   semi_variable: 'orange',
 };
 
-const TYPE_LABEL: Record<string, string> = {
-  fixed: '고정비',
-  variable: '변동비',
-  semi_variable: '반변동비',
-};
-
-const MONTH_LABELS = [
-  '', '1월', '2월', '3월', '4월', '5월', '6월',
-  '7월', '8월', '9월', '10월', '11월', '12월',
-];
-
 const fmtNum = (v: number) => {
   if (!v) return '-';
   return Number(v).toLocaleString();
 };
 
 const MonthlyCostSummaryPage: React.FC = () => {
+  const { t } = useTranslation(['analytics', 'common']);
+
+  const TYPE_LABEL: Record<string, string> = {
+    fixed: t('common:costType.fixed'),
+    variable: t('common:costType.variable'),
+    semi_variable: t('common:costType.semi_variable'),
+  };
+
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState<SummaryItem[]>([]);
   const [total, setTotal] = useState(0);
@@ -105,11 +103,14 @@ const MonthlyCostSummaryPage: React.FC = () => {
         { params: { fiscal_year: year, fiscal_month: month } },
       );
       message.success(
-        `집계 완료: ${res.data.accounts_processed}개 계정, ${res.data.days_in_month}일`,
+        t('analytics:monthlyCost.calculateSuccess', {
+          accounts: res.data.accounts_processed,
+          days: res.data.days_in_month,
+        }),
       );
       fetchData();
     } catch (err: any) {
-      message.error(err.response?.data?.detail || '집계 실패');
+      message.error(err.response?.data?.detail || t('common:message.failed'));
     } finally {
       setCalculating(false);
     }
@@ -117,34 +118,34 @@ const MonthlyCostSummaryPage: React.FC = () => {
 
   const columns = [
     {
-      title: '계정코드', dataIndex: 'account_code', key: 'code',
+      title: t('analytics:monthlyCost.columnAccountCode'), dataIndex: 'account_code', key: 'code',
       width: 100, fixed: 'left' as const,
       render: (v: string) => <strong>{v}</strong>,
     },
     {
-      title: '비용유형', dataIndex: 'cost_type', key: 'type',
+      title: t('analytics:monthlyCost.columnCostType'), dataIndex: 'cost_type', key: 'type',
       width: 100, align: 'center' as const,
       render: (v: string) => (
         <Tag color={TYPE_COLOR[v]}>{TYPE_LABEL[v] || v}</Tag>
       ),
     },
     {
-      title: '비용센터', dataIndex: 'cost_center_code', key: 'cc',
+      title: t('analytics:monthlyCost.columnCostCenter'), dataIndex: 'cost_center_code', key: 'cc',
       width: 100, align: 'center' as const,
-      render: (v: string | null) => v || '전사',
+      render: (v: string | null) => v || t('analytics:costClassification.companyWide'),
     },
     {
-      title: '월 총액', dataIndex: 'total_amount', key: 'total',
+      title: t('analytics:monthlyCost.columnMonthlyTotal'), dataIndex: 'total_amount', key: 'total',
       width: 150, align: 'right' as const,
       render: (v: number) => <strong>{fmtNum(v)}</strong>,
     },
     {
-      title: '일할 금액', dataIndex: 'daily_allocated_amount', key: 'daily',
+      title: t('analytics:monthlyCost.columnDailyAmount'), dataIndex: 'daily_allocated_amount', key: 'daily',
       width: 150, align: 'right' as const,
       render: fmtNum,
     },
     {
-      title: '역일수', dataIndex: 'working_days', key: 'days',
+      title: t('analytics:monthlyCost.columnDays'), dataIndex: 'working_days', key: 'days',
       width: 80, align: 'center' as const,
     },
   ];
@@ -159,7 +160,7 @@ const MonthlyCostSummaryPage: React.FC = () => {
         <Col>
           <Title level={4} style={{ margin: 0 }}>
             <BarChartOutlined style={{ marginRight: 8 }} />
-            월별 비용 집계
+            {t('analytics:monthlyCost.title')}
           </Title>
         </Col>
         <Col>
@@ -175,11 +176,11 @@ const MonthlyCostSummaryPage: React.FC = () => {
               onChange={setMonth}
               style={{ width: 90 }}
               options={Array.from({ length: 12 }, (_, i) => ({
-                value: i + 1, label: MONTH_LABELS[i + 1],
+                value: i + 1, label: t(`common:month.${i + 1}`),
               }))}
             />
             <Popconfirm
-              title={`${year}년 ${MONTH_LABELS[month]} 비용 집계 실행?`}
+              title={t('analytics:monthlyCost.calculateConfirm', { year, month: t(`common:month.${month}`) })}
               onConfirm={handleCalculate}
             >
               <Button
@@ -187,7 +188,7 @@ const MonthlyCostSummaryPage: React.FC = () => {
                 loading={calculating}
                 type="primary"
               >
-                집계 실행
+                {t('analytics:monthlyCost.calculateButton')}
               </Button>
             </Popconfirm>
           </Space>
@@ -199,7 +200,7 @@ const MonthlyCostSummaryPage: React.FC = () => {
           <Col span={6}>
             <Card size="small">
               <Statistic
-                title="총 비용"
+                title={t('analytics:monthlyCost.totalCost')}
                 value={Number(overview.grand_total)}
                 precision={0}
                 formatter={(val) => fmtNum(Number(val))}
@@ -210,7 +211,7 @@ const MonthlyCostSummaryPage: React.FC = () => {
           <Col span={6}>
             <Card size="small">
               <Statistic
-                title="일할 합계"
+                title={t('analytics:monthlyCost.dailyTotal')}
                 value={Number(overview.grand_daily)}
                 precision={0}
                 formatter={(val) => fmtNum(Number(val))}
@@ -221,7 +222,7 @@ const MonthlyCostSummaryPage: React.FC = () => {
           <Col span={6}>
             <Card size="small">
               <Statistic
-                title="역일수"
+                title={t('analytics:monthlyCost.calendarDays')}
                 value={overview.working_days}
                 suffix="일"
               />
@@ -230,7 +231,7 @@ const MonthlyCostSummaryPage: React.FC = () => {
           <Col span={6}>
             <Card size="small">
               <Statistic
-                title="비용 계정 수"
+                title={t('analytics:monthlyCost.costAccounts')}
                 value={total}
                 suffix="건"
               />
@@ -248,11 +249,11 @@ const MonthlyCostSummaryPage: React.FC = () => {
                   {TYPE_LABEL[bt.cost_type]}
                 </Tag>
                 <div>
-                  <Text strong>월 총액: </Text>
+                  <Text strong>{t('analytics:monthlyCost.monthlyTotal')}: </Text>
                   <Text>{fmtNum(Number(bt.total_amount))}</Text>
                 </div>
                 <div>
-                  <Text strong>일할: </Text>
+                  <Text strong>{t('analytics:monthlyCost.dailyAmount')}: </Text>
                   <Text>{fmtNum(Number(bt.daily_allocated))}/일</Text>
                 </div>
                 <div>
@@ -266,21 +267,21 @@ const MonthlyCostSummaryPage: React.FC = () => {
 
       <Space style={{ marginBottom: 16 }}>
         <Select
-          placeholder="비용유형 필터"
+          placeholder={t('analytics:monthlyCost.typeFilter')}
           value={typeFilter}
           onChange={setTypeFilter}
           allowClear
           style={{ width: 150 }}
           options={[
-            { value: 'fixed', label: '고정비' },
-            { value: 'variable', label: '변동비' },
-            { value: 'semi_variable', label: '반변동비' },
+            { value: 'fixed', label: t('common:costType.fixed') },
+            { value: 'variable', label: t('common:costType.variable') },
+            { value: 'semi_variable', label: t('common:costType.semi_variable') },
           ]}
         />
       </Space>
 
       <Card
-        title={`${year}년 ${MONTH_LABELS[month]} 비용 집계 (${total}개 계정)`}
+        title={t('analytics:monthlyCost.cardTitle', { year, month: t(`common:month.${month}`), count: total })}
         size="small"
       >
         <Table
@@ -295,7 +296,7 @@ const MonthlyCostSummaryPage: React.FC = () => {
             if (!overview) return null;
             return (
               <Table.Summary.Row style={{ fontWeight: 'bold', background: '#fafafa' }}>
-                <Table.Summary.Cell index={0}>합계</Table.Summary.Cell>
+                <Table.Summary.Cell index={0}>{t('common:table.total')}</Table.Summary.Cell>
                 <Table.Summary.Cell index={1} />
                 <Table.Summary.Cell index={2} />
                 <Table.Summary.Cell index={3} align="right">

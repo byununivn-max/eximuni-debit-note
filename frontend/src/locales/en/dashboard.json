@@ -1,0 +1,16 @@
+{
+  "title": "Dashboard",
+  "sellingTotal": "Selling Total ({{count}})",
+  "buyingTotal": "Buying Total ({{count}})",
+  "grossProfit": "Gross Profit (GP)",
+  "gpMargin": "GP Margin",
+  "monthlyTrend": "{{year}} Monthly Selling/Buying/GP Trend",
+  "customerTop": "Top 10 Customers by Sales",
+  "chartSelling": "Selling",
+  "chartBuying": "Buying",
+  "chartProfit": "Gross Profit",
+  "columnRank": "Rank",
+  "columnCustomer": "Customer",
+  "columnSalesVnd": "Sales (VND)",
+  "columnCount": "Count"
+}

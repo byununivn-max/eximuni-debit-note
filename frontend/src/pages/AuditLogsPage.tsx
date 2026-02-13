@@ -6,6 +6,7 @@ import {
 import {
   SearchOutlined, HistoryOutlined, AuditOutlined,
 } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 
 const { Title, Text } = Typography;
@@ -37,11 +38,11 @@ interface AuditLogItem {
 
 const ENTITY_LABELS: Record<string, string> = {
   debit_note: 'Debit Note',
-  purchase_order: '매입주문',
-  selling_record: '매출',
-  erp_suppliers: '공급사',
-  erp_purchase_orders: '매입주문',
-  erp_selling_records: '매출',
+  purchase_order: 'purchase_order',
+  selling_record: 'selling_record',
+  erp_suppliers: 'erp_suppliers',
+  erp_purchase_orders: 'erp_purchase_orders',
+  erp_selling_records: 'erp_selling_records',
 };
 
 const ACTION_COLORS: Record<string, string> = {
@@ -56,6 +57,7 @@ const ACTION_COLORS: Record<string, string> = {
 };
 
 const AuditLogsPage: React.FC = () => {
+  const { t } = useTranslation(['analytics', 'common']);
   const [activeTab, setActiveTab] = useState('workflow');
 
   // 워크플로우 상태
@@ -99,7 +101,7 @@ const AuditLogsPage: React.FC = () => {
       setWorkflows(res.data.items);
       setWfTotal(res.data.total);
     } catch (err: any) {
-      message.error('워크플로우 이력 조회 실패');
+      message.error(t('common:message.fetchFailed'));
     } finally {
       setWfLoading(false);
     }
@@ -122,7 +124,7 @@ const AuditLogsPage: React.FC = () => {
       setAuditLogs(res.data.items);
       setAuditTotal(res.data.total);
     } catch (err: any) {
-      message.error('감사 로그 조회 실패');
+      message.error(t('common:message.fetchFailed'));
     } finally {
       setAuditLoading(false);
     }
@@ -138,79 +140,79 @@ const AuditLogsPage: React.FC = () => {
 
   const wfColumns = [
     {
-      title: '시각', dataIndex: 'created_at', key: 'time', width: 160,
+      title: t('analytics:audit.wfColumnTime'), dataIndex: 'created_at', key: 'time', width: 160,
       render: (v: string) => v?.replace('T', ' ').substring(0, 19),
     },
     {
-      title: '대상', dataIndex: 'entity_type', key: 'entity', width: 120,
+      title: t('analytics:audit.wfColumnTarget'), dataIndex: 'entity_type', key: 'entity', width: 120,
       render: (v: string) => (
         <Tag>{ENTITY_LABELS[v] || v}</Tag>
       ),
     },
     {
-      title: 'ID', dataIndex: 'entity_id', key: 'id', width: 70,
+      title: t('analytics:audit.wfColumnId'), dataIndex: 'entity_id', key: 'id', width: 70,
       align: 'center' as const,
     },
     {
-      title: '액션', dataIndex: 'action', key: 'action', width: 100,
+      title: t('analytics:audit.wfColumnAction'), dataIndex: 'action', key: 'action', width: 100,
       render: (v: string) => (
         <Tag color={ACTION_COLORS[v] || 'default'}>{v.toUpperCase()}</Tag>
       ),
     },
     {
-      title: '이전 상태', dataIndex: 'from_status', key: 'from', width: 120,
+      title: t('analytics:audit.wfColumnFromStatus'), dataIndex: 'from_status', key: 'from', width: 120,
       render: (v: string) => v || '-',
     },
     {
-      title: '변경 상태', dataIndex: 'to_status', key: 'to', width: 120,
+      title: t('analytics:audit.wfColumnToStatus'), dataIndex: 'to_status', key: 'to', width: 120,
       render: (v: string) => v ? (
         <Tag color="blue">{v}</Tag>
       ) : '-',
     },
     {
-      title: '수행자', dataIndex: 'performed_by', key: 'user', width: 80,
+      title: t('analytics:audit.wfColumnUser'), dataIndex: 'performed_by', key: 'user', width: 80,
       align: 'center' as const,
     },
     {
-      title: '코멘트', dataIndex: 'comment', key: 'comment',
+      title: t('analytics:audit.wfColumnComment'), dataIndex: 'comment', key: 'comment',
       ellipsis: true,
     },
   ];
 
   const auditColumns = [
     {
-      title: '시각', dataIndex: 'action_at', key: 'time', width: 160,
+      title: t('analytics:audit.auditColumnTime'), dataIndex: 'action_at', key: 'time', width: 160,
       render: (v: string) => v?.replace('T', ' ').substring(0, 19),
     },
     {
-      title: '테이블', dataIndex: 'entity_type', key: 'entity', width: 180,
+      title: t('analytics:audit.auditColumnTable'), dataIndex: 'entity_type', key: 'entity', width: 180,
       render: (v: string) => (
         <Text code>{ENTITY_LABELS[v] || v}</Text>
       ),
     },
     {
-      title: 'ID', dataIndex: 'entity_id', key: 'id', width: 70,
+      title: t('analytics:audit.auditColumnId'), dataIndex: 'entity_id', key: 'id', width: 70,
       align: 'center' as const,
     },
     {
-      title: '액션', dataIndex: 'action', key: 'action', width: 100,
+      title: t('analytics:audit.auditColumnAction'), dataIndex: 'action', key: 'action', width: 100,
       render: (v: string) => (
         <Tag color={ACTION_COLORS[v] || 'default'}>{v}</Tag>
       ),
     },
     {
-      title: '수행자', dataIndex: 'performed_by', key: 'user', width: 80,
+      title: t('analytics:audit.auditColumnUser'), dataIndex: 'performed_by', key: 'user', width: 80,
       align: 'center' as const,
     },
     {
-      title: 'IP', dataIndex: 'ip_address', key: 'ip', width: 130,
+      title: t('analytics:audit.auditColumnIp'), dataIndex: 'ip_address', key: 'ip', width: 130,
     },
     {
       title: '', key: 'detail', width: 70,
       render: (_: any, r: AuditLogItem) => (
         (r.old_values || r.new_values) ? (
           <a onClick={() => { setDetailLog(r); setDetailOpen(true); }}>
-            상세
+            {t('common:button.detail')}
           </a>
         ) : null
       ),
@@ -239,7 +241,7 @@ const AuditLogsPage: React.FC = () => {
 
   return (
     <div>
-      <Title level={4} style={{ marginBottom: 16 }}>감사 이력</Title>
+      <Title level={4} style={{ marginBottom: 16 }}>{t('analytics:audit.title')}</Title>
 
       <Tabs
         activeKey={activeTab}
@@ -248,7 +250,7 @@ const AuditLogsPage: React.FC = () => {
           {
             key: 'workflow',
             label: (
-              <span><HistoryOutlined /> 워크플로우 이력</span>
+              <span><HistoryOutlined /> {t('analytics:audit.workflowTab')}</span>
             ),
             children: (
               <>
@@ -256,29 +258,29 @@ const AuditLogsPage: React.FC = () => {
                   <Row gutter={16}>
                     <Col span={5}>
                       <Select
-                        placeholder="대상 유형"
+                        placeholder={t('analytics:audit.targetType')}
                         allowClear
                         style={{ width: '100%' }}
                         onChange={(v) => { setWfEntityType(v); setWfPage(1); }}
                         options={[
                           { value: 'debit_note', label: 'Debit Note' },
-                          { value: 'purchase_order', label: '매입주문' },
-                          { value: 'selling_record', label: '매출' },
+                          { value: 'purchase_order', label: ENTITY_LABELS['purchase_order'] },
+                          { value: 'selling_record', label: ENTITY_LABELS['selling_record'] },
                         ]}
                       />
                     </Col>
                     <Col span={5}>
                       <Select
-                        placeholder="액션"
+                        placeholder={t('analytics:audit.actionFilter')}
                         allowClear
                         style={{ width: '100%' }}
                         onChange={(v) => { setWfAction(v); setWfPage(1); }}
                         options={[
-                          { value: 'submit', label: '제출' },
-                          { value: 'approve', label: '승인' },
-                          { value: 'reject', label: '반려' },
-                          { value: 'confirm', label: '확정' },
-                          { value: 'cancel', label: '취소' },
+                          { value: 'submit', label: t('analytics:audit.actionSubmit') },
+                          { value: 'approve', label: t('analytics:audit.actionApprove') },
+                          { value: 'reject', label: t('analytics:audit.actionReject') },
+                          { value: 'confirm', label: t('analytics:audit.actionConfirm') },
+                          { value: 'cancel', label: t('analytics:audit.actionCancel') },
                         ]}
                       />
                     </Col>
@@ -300,7 +302,7 @@ const AuditLogsPage: React.FC = () => {
                       pageSize: wfPageSize,
                       total: wfTotal,
                       showSizeChanger: true,
-                      showTotal: (t) => `총 ${t}건`,
+                      showTotal: (total) => t('common:pagination.totalItems', { count: total }),
                       onChange: (p, ps) => {
                         setWfPage(p);
                         setWfPageSize(ps);
@@ -314,7 +316,7 @@ const AuditLogsPage: React.FC = () => {
           {
             key: 'audit',
             label: (
-              <span><AuditOutlined /> 감사 로그</span>
+              <span><AuditOutlined /> {t('analytics:audit.auditTab')}</span>
             ),
             children: (
               <>
@@ -322,7 +324,7 @@ const AuditLogsPage: React.FC = () => {
                   <Row gutter={16}>
                     <Col span={6}>
                       <Select
-                        placeholder="테이블"
+                        placeholder={t('analytics:audit.tableFilter')}
                         allowClear
                         style={{ width: '100%' }}
                         onChange={(v) => {
@@ -330,15 +332,15 @@ const AuditLogsPage: React.FC = () => {
                           setAuditPage(1);
                         }}
                         options={[
-                          { value: 'erp_suppliers', label: '공급사' },
-                          { value: 'erp_purchase_orders', label: '매입주문' },
-                          { value: 'erp_selling_records', label: '매출' },
+                          { value: 'erp_suppliers', label: ENTITY_LABELS['erp_suppliers'] },
+                          { value: 'erp_purchase_orders', label: ENTITY_LABELS['erp_purchase_orders'] },
+                          { value: 'erp_selling_records', label: ENTITY_LABELS['erp_selling_records'] },
                         ]}
                       />
                     </Col>
                     <Col span={4}>
                       <Select
-                        placeholder="액션"
+                        placeholder={t('analytics:audit.actionFilter')}
                         allowClear
                         style={{ width: '100%' }}
                         onChange={(v) => {
@@ -370,7 +372,7 @@ const AuditLogsPage: React.FC = () => {
                       pageSize: auditPageSize,
                       total: auditTotal,
                       showSizeChanger: true,
-                      showTotal: (t) => `총 ${t}건`,
+                      showTotal: (total) => t('common:pagination.totalItems', { count: total }),
                       onChange: (p, ps) => {
                         setAuditPage(p);
                         setAuditPageSize(ps);
@@ -385,7 +387,7 @@ const AuditLogsPage: React.FC = () => {
       />
 
       <Modal
-        title="변경 상세"
+        title={t('analytics:audit.changeDetailTitle')}
         open={detailOpen}
         onCancel={() => { setDetailOpen(false); setDetailLog(null); }}
         footer={null}
@@ -394,18 +396,18 @@ const AuditLogsPage: React.FC = () => {
         {detailLog && (
           <>
             <Descriptions column={2} bordered size="small">
-              <Descriptions.Item label="테이블">
+              <Descriptions.Item label={t('analytics:audit.auditColumnTable')}>
                 {ENTITY_LABELS[detailLog.entity_type] || detailLog.entity_type}
               </Descriptions.Item>
-              <Descriptions.Item label="ID">
+              <Descriptions.Item label={t('analytics:audit.auditColumnId')}>
                 {detailLog.entity_id}
               </Descriptions.Item>
-              <Descriptions.Item label="액션">
+              <Descriptions.Item label={t('analytics:audit.auditColumnAction')}>
                 <Tag color={ACTION_COLORS[detailLog.action]}>
                   {detailLog.action}
                 </Tag>
               </Descriptions.Item>
-              <Descriptions.Item label="시각">
+              <Descriptions.Item label={t('analytics:audit.auditColumnTime')}>
                 {detailLog.action_at?.replace('T', ' ').substring(0, 19)}
               </Descriptions.Item>
             </Descriptions>
@@ -413,7 +415,7 @@ const AuditLogsPage: React.FC = () => {
             {detailLog.old_values && (
               <Card
                 size="small"
-                title="변경 전"
+                title={t('analytics:audit.beforeChange')}
                 style={{ marginTop: 16 }}
               >
                 <pre style={{
@@ -427,7 +429,7 @@ const AuditLogsPage: React.FC = () => {
             {detailLog.new_values && (
               <Card
                 size="small"
-                title="변경 후"
+                title={t('analytics:audit.afterChange')}
                 style={{ marginTop: 8 }}
               >
                 <pre style={{

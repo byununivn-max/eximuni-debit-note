@@ -7,6 +7,7 @@ import {
   CalendarOutlined, LockOutlined, UnlockOutlined,
   PlusOutlined,
 } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 
 const { Title } = Typography;
@@ -28,6 +29,7 @@ const MONTH_LABELS = [
 ];
 
 const FiscalPeriodsPage: React.FC = () => {
+  const { t } = useTranslation(['analytics', 'common']);
   const [loading, setLoading] = useState(true);
   const [periods, setPeriods] = useState<FiscalPeriodItem[]>([]);
   const [year, setYear] = useState(new Date().getFullYear());
@@ -56,11 +58,11 @@ const FiscalPeriodsPage: React.FC = () => {
         `/api/v1/fiscal-periods/generate?year=${year}`,
       );
       message.success(
-        `${year}년: ${res.data.created}건 생성, ${res.data.skipped}건 스킵`,
+        `${year}: ${res.data.created} created, ${res.data.skipped} skipped`,
       );
       fetchData();
     } catch (err: any) {
-      message.error(err.response?.data?.detail || '기간 생성 실패');
+      message.error(err.response?.data?.detail || t('common:message.createFailed'));
     } finally {
       setGenerating(false);
     }
@@ -69,20 +71,20 @@ const FiscalPeriodsPage: React.FC = () => {
   const handleClose = async (periodId: number) => {
     try {
       await api.post(`/api/v1/fiscal-periods/${periodId}/close`);
-      message.success('기간 마감 완료');
+      message.success(t('analytics:masterData.fiscalPeriods.closeSuccess'));
       fetchData();
     } catch (err: any) {
-      message.error(err.response?.data?.detail || '마감 실패');
+      message.error(err.response?.data?.detail || t('common:message.failed'));
     }
   };
 
   const handleReopen = async (periodId: number) => {
     try {
       await api.post(`/api/v1/fiscal-periods/${periodId}/reopen`);
-      message.success('기간 마감 해제');
+      message.success(t('analytics:masterData.fiscalPeriods.reopenSuccess'));
       fetchData();
     } catch (err: any) {
-      message.error(err.response?.data?.detail || '마감 해제 실패');
+      message.error(err.response?.data?.detail || t('common:message.failed'));
     }
   };
 
@@ -91,55 +93,55 @@ const FiscalPeriodsPage: React.FC = () => {
 
   const columns = [
     {
-      title: '월', dataIndex: 'period_month', key: 'month',
+      title: t('analytics:masterData.fiscalPeriods.columnMonth'), dataIndex: 'period_month', key: 'month',
       width: 80, align: 'center' as const,
       render: (v: number) => <strong>{MONTH_LABELS[v]}</strong>,
     },
     {
-      title: '시작일', dataIndex: 'start_date', key: 'start',
+      title: t('analytics:masterData.fiscalPeriods.columnStart'), dataIndex: 'start_date', key: 'start',
       width: 120, align: 'center' as const,
     },
     {
-      title: '종료일', dataIndex: 'end_date', key: 'end',
+      title: t('analytics:masterData.fiscalPeriods.columnEnd'), dataIndex: 'end_date', key: 'end',
       width: 120, align: 'center' as const,
     },
     {
-      title: '상태', dataIndex: 'is_closed', key: 'status',
+      title: t('analytics:masterData.fiscalPeriods.columnStatus'), dataIndex: 'is_closed', key: 'status',
       width: 100, align: 'center' as const,
       render: (v: boolean) => v
-        ? <Tag icon={<LockOutlined />} color="red">마감</Tag>
-        : <Tag icon={<UnlockOutlined />} color="green">오픈</Tag>,
+        ? <Tag icon={<LockOutlined />} color="red">{t('common:status.closed')}</Tag>
+        : <Tag icon={<UnlockOutlined />} color="green">{t('common:status.open')}</Tag>,
     },
     {
-      title: '마감일시', dataIndex: 'closed_at', key: 'closed_at',
+      title: t('analytics:masterData.fiscalPeriods.columnClosedAt'), dataIndex: 'closed_at', key: 'closed_at',
       width: 180,
       render: (v: string | null) => v
         ? new Date(v).toLocaleString('ko-KR')
         : '-',
     },
     {
-      title: '작업', key: 'action', width: 120,
+      title: t('analytics:masterData.fiscalPeriods.columnAction'), key: 'action', width: 120,
       align: 'center' as const,
       render: (_: any, r: FiscalPeriodItem) => r.is_closed ? (
         <Popconfirm
-          title="이 기간의 마감을 해제하시겠습니까?"
+          title={t('analytics:masterData.fiscalPeriods.reopenConfirm')}
           onConfirm={() => handleReopen(r.period_id)}
-          okText="해제"
-          cancelText="취소"
+          okText={t('common:button.reopen')}
+          cancelText={t('common:button.cancel')}
         >
           <Button size="small" icon={<UnlockOutlined />}>
-            재개
+            {t('common:button.reopen')}
           </Button>
         </Popconfirm>
       ) : (
         <Popconfirm
-          title="이 기간을 마감하시겠습니까?"
+          title={t('analytics:masterData.fiscalPeriods.closeConfirm')}
           onConfirm={() => handleClose(r.period_id)}
-          okText="마감"
-          cancelText="취소"
+          okText={t('common:button.close')}
+          cancelText={t('common:button.cancel')}
         >
           <Button size="small" type="primary" icon={<LockOutlined />}>
-            마감
+            {t('common:button.close')}
           </Button>
         </Popconfirm>
       ),
@@ -158,7 +160,7 @@ const FiscalPeriodsPage: React.FC = () => {
         <Col>
           <Title level={4} style={{ margin: 0 }}>
             <CalendarOutlined style={{ marginRight: 8 }} />
-            회계기간 관리
+            {t('analytics:masterData.fiscalPeriods.title')}
           </Title>
         </Col>
         <Col>
@@ -174,16 +176,16 @@ const FiscalPeriodsPage: React.FC = () => {
               ]}
             />
             <Popconfirm
-              title={`${year}년 12개월 회계기간을 생성하시겠습니까?`}
+              title={t('analytics:masterData.fiscalPeriods.generateConfirm', { year })}
               onConfirm={handleGenerate}
-              okText="생성"
-              cancelText="취소"
+              okText={t('common:button.generate')}
+              cancelText={t('common:button.cancel')}
             >
               <Button
                 icon={<PlusOutlined />}
                 loading={generating}
               >
-                기간 생성
+                {t('analytics:masterData.fiscalPeriods.generateButton')}
               </Button>
             </Popconfirm>
           </Space>
@@ -197,7 +199,7 @@ const FiscalPeriodsPage: React.FC = () => {
             <Space>
               <CalendarOutlined style={{ fontSize: 24, color: '#1890ff' }} />
               <div>
-                <div style={{ color: '#999', fontSize: 12 }}>전체 기간</div>
+                <div style={{ color: '#999', fontSize: 12 }}>{t('analytics:masterData.fiscalPeriods.totalPeriods')}</div>
                 <strong style={{ fontSize: 20 }}>{periods.length}</strong>
               </div>
             </Space>
@@ -208,7 +210,7 @@ const FiscalPeriodsPage: React.FC = () => {
             <Space>
               <UnlockOutlined style={{ fontSize: 24, color: '#52c41a' }} />
               <div>
-                <div style={{ color: '#999', fontSize: 12 }}>오픈</div>
+                <div style={{ color: '#999', fontSize: 12 }}>{t('common:status.open')}</div>
                 <strong style={{ fontSize: 20, color: '#52c41a' }}>
                   {openCount}
                 </strong>
@@ -221,7 +223,7 @@ const FiscalPeriodsPage: React.FC = () => {
             <Space>
               <LockOutlined style={{ fontSize: 24, color: '#ff4d4f' }} />
               <div>
-                <div style={{ color: '#999', fontSize: 12 }}>마감</div>
+                <div style={{ color: '#999', fontSize: 12 }}>{t('common:status.closed')}</div>
                 <strong style={{ fontSize: 20, color: '#ff4d4f' }}>
                   {closedCount}
                 </strong>
@@ -232,7 +234,7 @@ const FiscalPeriodsPage: React.FC = () => {
       </Row>
 
       <Card
-        title={`${year}년 회계기간 (${periods.length}개월)`}
+        title={t('analytics:masterData.fiscalPeriods.cardTitle', { year, count: periods.length })}
         size="small"
       >
         {periods.length > 0 ? (
@@ -245,7 +247,7 @@ const FiscalPeriodsPage: React.FC = () => {
           />
         ) : (
           <div style={{ textAlign: 'center', padding: 40, color: '#999' }}>
-            {year}년 회계기간이 없습니다. "기간 생성" 버튼을 클릭하세요.
+            {t('analytics:masterData.fiscalPeriods.noPeriods', { year })}
           </div>
         )}
       </Card>

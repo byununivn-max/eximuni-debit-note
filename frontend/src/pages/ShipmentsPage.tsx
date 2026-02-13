@@ -5,6 +5,7 @@ import {
 } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
+import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 import type {
   MssqlDebitSharepoint, PaginatedResponse,
@@ -14,6 +15,7 @@ const { Title } = Typography;
 const { RangePicker } = DatePicker;
 
 const ShipmentsPage: React.FC = () => {
+  const { t } = useTranslation(['operations', 'common']);
   const [data, setData] = useState<MssqlDebitSharepoint[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -47,7 +49,7 @@ const ShipmentsPage: React.FC = () => {
       setData(res.data.items);
       setTotal(res.data.total);
     } catch (err: any) {
-      message.error(err.response?.data?.detail || '거래 데이터 조회 실패');
+      message.error(err.response?.data?.detail || t('operations:shipments.fetchFailed'));
     } finally {
       setLoading(false);
     }
@@ -64,38 +66,38 @@ const ShipmentsPage: React.FC = () => {
   };
 
   const columns = [
-    { title: 'ID', dataIndex: 'id_invoice', key: 'id', width: 70 },
-    { title: 'Invoice', dataIndex: 'invoice', key: 'invoice', width: 140 },
-    { title: '수출입', dataIndex: 'im_ex', key: 'im_ex', width: 80,
+    { title: t('operations:shipments.columnId'), dataIndex: 'id_invoice', key: 'id', width: 70 },
+    { title: t('operations:shipments.columnInvoice'), dataIndex: 'invoice', key: 'invoice', width: 140 },
+    { title: t('operations:shipments.columnImEx'), dataIndex: 'im_ex', key: 'im_ex', width: 80,
       render: (v: string) => v ? (
         <Tag color={v === 'IM' ? 'blue' : 'orange'}>{v}</Tag>
       ) : null,
     },
-    { title: '고객사', dataIndex: 'clients', key: 'clients', width: 200 },
-    { title: '도착일', dataIndex: 'arrival_date', key: 'arrival', width: 110 },
-    { title: 'BL', dataIndex: 'bl', key: 'bl', width: 140 },
-    { title: 'MBL', dataIndex: 'mbl', key: 'mbl', width: 140 },
-    { title: '운송', dataIndex: 'phuong_thuc_van_chuyen', key: 'transport', width: 80,
+    { title: t('operations:shipments.columnClient'), dataIndex: 'clients', key: 'clients', width: 200 },
+    { title: t('operations:shipments.columnArrival'), dataIndex: 'arrival_date', key: 'arrival', width: 110 },
+    { title: t('operations:shipments.columnBl'), dataIndex: 'bl', key: 'bl', width: 140 },
+    { title: t('operations:shipments.columnMbl'), dataIndex: 'mbl', key: 'mbl', width: 140 },
+    { title: t('operations:shipments.columnTransport'), dataIndex: 'phuong_thuc_van_chuyen', key: 'transport', width: 80,
       render: (v: string) => v ? <Tag>{v}</Tag> : null,
     },
-    { title: 'Debit 상태', dataIndex: 'debit_status', key: 'status', width: 100,
+    { title: t('operations:shipments.columnDebitStatus'), dataIndex: 'debit_status', key: 'status', width: 100,
       render: (v: string) => v ? (
         <Tag color={statusColors[v] || 'default'}>{v}</Tag>
       ) : null,
     },
-    { title: 'Forward', dataIndex: 'forward', key: 'forward', width: 100 },
-    { title: 'Ops', dataIndex: 'operation', key: 'operation', width: 100 },
+    { title: t('operations:shipments.columnForward'), dataIndex: 'forward', key: 'forward', width: 100 },
+    { title: t('operations:shipments.columnOps'), dataIndex: 'operation', key: 'operation', width: 100 },
   ];
 
   return (
     <div>
-      <Title level={4} style={{ marginBottom: 16 }}>거래 데이터</Title>
+      <Title level={4} style={{ marginBottom: 16 }}>{t('operations:shipments.title')}</Title>
 
       <Card size="small" style={{ marginBottom: 16 }}>
         <Row gutter={16}>
           <Col span={6}>
             <Input
-              placeholder="Invoice/BL/고객명/MBL 검색"
+              placeholder={t('operations:shipments.searchPlaceholder')}
               prefix={<SearchOutlined />}
               allowClear
               onPressEnter={(e) => {
@@ -109,19 +111,19 @@ const ShipmentsPage: React.FC = () => {
           </Col>
           <Col span={3}>
             <Select
-              placeholder="수출입"
+              placeholder={t('operations:shipments.imExFilter')}
               allowClear
               style={{ width: '100%' }}
               onChange={(v) => { setImExFilter(v); setPage(1); }}
               options={[
-                { value: 'IM', label: 'IM (수입)' },
-                { value: 'EX', label: 'EX (수출)' },
+                { value: 'IM', label: t('common:imEx.import') },
+                { value: 'EX', label: t('common:imEx.export') },
               ]}
             />
           </Col>
           <Col span={4}>
             <Select
-              placeholder="Debit 상태"
+              placeholder={t('operations:shipments.debitStatus')}
               allowClear
               style={{ width: '100%' }}
               onChange={(v) => { setStatusFilter(v); setPage(1); }}
@@ -158,7 +160,7 @@ const ShipmentsPage: React.FC = () => {
             pageSize,
             total,
             showSizeChanger: true,
-            showTotal: (t) => `총 ${t}건`,
+            showTotal: (total) => t('common:pagination.totalItems', { count: total }),
             onChange: (p, ps) => { setPage(p); setPageSize(ps); },
           }}
         />

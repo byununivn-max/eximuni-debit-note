@@ -2,6 +2,10 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ConfigProvider } from 'antd';
 import koKR from 'antd/locale/ko_KR';
+import enUS from 'antd/locale/en_US';
+import viVN from 'antd/locale/vi_VN';
+import { useTranslation } from 'react-i18next';
+import './i18n';
 import { PublicClientApplication } from '@azure/msal-browser';
 import { MsalProvider } from '@azure/msal-react';
 import { msalConfig, msalEnabled } from './msalConfig';
@@ -83,15 +87,22 @@ const AppRoutes: React.FC = () => {
   );
 };
 
-const AppContent: React.FC = () => (
-  <ConfigProvider locale={koKR}>
-    <BrowserRouter>
-      <AuthProvider>
-        <AppRoutes />
-      </AuthProvider>
-    </BrowserRouter>
-  </ConfigProvider>
-);
+const antdLocaleMap: Record<string, typeof koKR> = { ko: koKR, en: enUS, vi: viVN };
+
+const AppContent: React.FC = () => {
+  const { i18n } = useTranslation();
+  const antdLocale = antdLocaleMap[i18n.language] || antdLocaleMap[i18n.language?.split('-')[0]] || koKR;
+
+  return (
+    <ConfigProvider locale={antdLocale}>
+      <BrowserRouter>
+        <AuthProvider>
+          <AppRoutes />
+        </AuthProvider>
+      </BrowserRouter>
+    </ConfigProvider>
+  );
+};
 
 const App: React.FC = () => {
   // MSAL 활성화 시 MsalProvider로 래핑

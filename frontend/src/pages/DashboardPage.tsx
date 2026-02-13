@@ -8,6 +8,7 @@ import {
   ShoppingCartOutlined, FundOutlined, PercentageOutlined,
 } from '@ant-design/icons';
 import { Column } from '@ant-design/charts';
+import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 
 const { Title, Text } = Typography;
@@ -35,12 +36,8 @@ interface CustomerItem {
   count: number;
 }
 
-const MONTH_LABELS = [
-  '', '1월', '2월', '3월', '4월', '5월', '6월',
-  '7월', '8월', '9월', '10월', '11월', '12월',
-];
-
 const DashboardPage: React.FC = () => {
+  const { t } = useTranslation(['dashboard', 'common']);
   const [loading, setLoading] = useState(true);
   const [kpi, setKpi] = useState<Kpi | null>(null);
   const [monthly, setMonthly] = useState<MonthlyItem[]>([]);
@@ -79,9 +76,9 @@ const DashboardPage: React.FC = () => {
 
   // 차트 데이터 변환
   const chartData = monthly.flatMap(m => [
-    { month: MONTH_LABELS[m.month], type: '매출', value: m.selling },
-    { month: MONTH_LABELS[m.month], type: '매입', value: m.buying },
-    { month: MONTH_LABELS[m.month], type: '영업이익', value: m.profit },
+    { month: t(`common:month.${m.month}`), type: t('dashboard:chartSelling'), value: m.selling },
+    { month: t(`common:month.${m.month}`), type: t('dashboard:chartBuying'), value: m.buying },
+    { month: t(`common:month.${m.month}`), type: t('dashboard:chartProfit'), value: m.profit },
   ]);
 
   const chartConfig = {
@@ -110,20 +107,20 @@ const DashboardPage: React.FC = () => {
 
   const customerColumns = [
     {
-      title: '순위', key: 'rank', width: 60, align: 'center' as const,
+      title: t('dashboard:columnRank'), key: 'rank', width: 60, align: 'center' as const,
       render: (_: any, __: any, idx: number) => idx + 1,
     },
     {
-      title: '고객명', dataIndex: 'customer_name', key: 'name',
+      title: t('dashboard:columnCustomer'), dataIndex: 'customer_name', key: 'name',
       ellipsis: true,
     },
     {
-      title: '매출 (VND)', dataIndex: 'total_vnd', key: 'total',
+      title: t('dashboard:columnSalesVnd'), dataIndex: 'total_vnd', key: 'total',
       width: 160, align: 'right' as const,
       render: (v: number) => Number(v).toLocaleString(),
     },
     {
-      title: '건수', dataIndex: 'count', key: 'count',
+      title: t('dashboard:columnCount'), dataIndex: 'count', key: 'count',
       width: 70, align: 'center' as const,
     },
   ];
@@ -138,7 +135,7 @@ const DashboardPage: React.FC = () => {
           marginBottom: 16,
         }}
       >
-        <Title level={4} style={{ margin: 0 }}>Dashboard</Title>
+        <Title level={4} style={{ margin: 0 }}>{t('dashboard:title')}</Title>
         <Select
           value={year}
           onChange={setYear}
@@ -156,7 +153,7 @@ const DashboardPage: React.FC = () => {
         <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
-              title={`매출 합계 (${kpi?.selling_count || 0}건)`}
+              title={t('dashboard:sellingTotal', { count: kpi?.selling_count || 0 })}
               value={Number(kpi?.total_selling_vnd || 0)}
               prefix={<FundOutlined />}
               valueStyle={{ color: '#52c41a' }}
@@ -167,7 +164,7 @@ const DashboardPage: React.FC = () => {
         <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
-              title={`매입 합계 (${kpi?.buying_count || 0}건)`}
+              title={t('dashboard:buyingTotal', { count: kpi?.buying_count || 0 })}
               value={Number(kpi?.total_buying_vnd || 0)}
               prefix={<ShoppingCartOutlined />}
               valueStyle={{ color: '#ff4d4f' }}
@@ -178,7 +175,7 @@ const DashboardPage: React.FC = () => {
         <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
-              title="영업이익 (GP)"
+              title={t('dashboard:grossProfit')}
               value={Number(kpi?.gross_profit_vnd || 0)}
               prefix={
                 (kpi?.gross_profit_vnd || 0) >= 0
@@ -193,7 +190,7 @@ const DashboardPage: React.FC = () => {
         <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
-              title="GP 마진"
+              title={t('dashboard:gpMargin')}
               value={Number(kpi?.gp_margin_pct || 0)}
               prefix={<PercentageOutlined />}
               suffix="%"
@@ -206,7 +203,7 @@ const DashboardPage: React.FC = () => {
 
       {/* 월별 추이 차트 */}
       <Card
-        title={`${year}년 월별 매출/매입/영업이익 추이`}
+        title={t('dashboard:monthlyTrend', { year })}
         size="small"
         style={{ marginBottom: 24 }}
       >
@@ -216,7 +213,7 @@ const DashboardPage: React.FC = () => {
       </Card>
 
       {/* 고객별 매출 TOP 10 */}
-      <Card title="고객별 매출 TOP 10" size="small">
+      <Card title={t('dashboard:customerTop')} size="small">
         <Table
           columns={customerColumns}
           dataSource={customers}

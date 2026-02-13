@@ -7,6 +7,7 @@ import {
   SearchOutlined, SyncOutlined, LinkOutlined,
   TeamOutlined,
 } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 
 const { Title } = Typography;
@@ -25,6 +26,7 @@ interface CustomerItem {
 }
 
 const AccountingCustomersPage: React.FC = () => {
+  const { t } = useTranslation(['accounting', 'common']);
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState<CustomerItem[]>([]);
   const [total, setTotal] = useState(0);
@@ -57,11 +59,11 @@ const AccountingCustomersPage: React.FC = () => {
     try {
       const res = await api.post('/api/v1/accounting-customers/extract-from-journal');
       message.success(
-        `추출 완료: ${res.data.created}건 생성, ${res.data.skipped}건 스킵`,
+        t('common:message.importSuccess') + `: ${res.data.created}건 / ${res.data.skipped}건`,
       );
       fetchData();
     } catch (err: any) {
-      message.error(err.response?.data?.detail || '추출 실패');
+      message.error(err.response?.data?.detail || t('common:message.importFailed'));
     } finally {
       setExtracting(false);
     }
@@ -69,41 +71,41 @@ const AccountingCustomersPage: React.FC = () => {
 
   const columns = [
     {
-      title: '사업자번호', dataIndex: 'tax_id', key: 'tax',
+      title: t('accounting:customers.columnTaxId'), dataIndex: 'tax_id', key: 'tax',
       width: 130, fixed: 'left' as const,
       render: (v: string) => <strong>{v}</strong>,
     },
     {
-      title: '고객명 (VN)', dataIndex: 'customer_name_vn', key: 'vn',
+      title: t('accounting:customers.columnNameVn'), dataIndex: 'customer_name_vn', key: 'vn',
       ellipsis: true,
     },
     {
-      title: '고객명 (EN)', dataIndex: 'customer_name_en', key: 'en',
+      title: t('accounting:customers.columnNameEn'), dataIndex: 'customer_name_en', key: 'en',
       ellipsis: true,
     },
     {
-      title: 'AR 계정', dataIndex: 'default_ar_account', key: 'ar',
+      title: t('accounting:customers.columnArAccount'), dataIndex: 'default_ar_account', key: 'ar',
       width: 100, align: 'center' as const,
       render: (v: string) => <Tag>{v}</Tag>,
     },
     {
-      title: '매출 계정', dataIndex: 'default_revenue_account', key: 'rev',
+      title: t('accounting:customers.columnRevenueAccount'), dataIndex: 'default_revenue_account', key: 'rev',
       width: 100, align: 'center' as const,
       render: (v: string) => <Tag>{v}</Tag>,
     },
     {
-      title: '통화', dataIndex: 'currency_code', key: 'ccy',
+      title: t('accounting:customers.columnCurrency'), dataIndex: 'currency_code', key: 'ccy',
       width: 70, align: 'center' as const,
     },
     {
-      title: 'MSSQL 매핑', dataIndex: 'mssql_client_ref', key: 'mapped',
+      title: t('accounting:customers.columnMssqlMapping'), dataIndex: 'mssql_client_ref', key: 'mapped',
       width: 110, align: 'center' as const,
       render: (v: number | null) => v
         ? <Tag color="green" icon={<LinkOutlined />}>#{v}</Tag>
-        : <Tag color="default">미매핑</Tag>,
+        : <Tag color="default">{t('common:status.unmapped')}</Tag>,
     },
     {
-      title: '소스', dataIndex: 'source', key: 'source',
+      title: t('accounting:customers.columnSource'), dataIndex: 'source', key: 'source',
       width: 90, align: 'center' as const,
       render: (v: string) => (
         <Tag color={v === 'smartbooks_import' ? 'purple' : 'blue'}>
@@ -123,13 +125,13 @@ const AccountingCustomersPage: React.FC = () => {
         <Col>
           <Title level={4} style={{ margin: 0 }}>
             <TeamOutlined style={{ marginRight: 8 }} />
-            회계 고객 ({total}건)
+            {t('accounting:customers.titleCount', { count: total })}
           </Title>
         </Col>
         <Col>
-          <Popconfirm title="분개장에서 Customer 추출?" onConfirm={handleExtract}>
+          <Popconfirm title={t('accounting:customers.extractConfirm')} onConfirm={handleExtract}>
             <Button icon={<SyncOutlined spin={extracting} />} loading={extracting}>
-              분개장 추출
+              {t('accounting:customers.extractButton')}
             </Button>
           </Popconfirm>
         </Col>
@@ -137,7 +139,7 @@ const AccountingCustomersPage: React.FC = () => {
 
       <Space wrap style={{ marginBottom: 16 }}>
         <Input
-          placeholder="사업자번호/이름 검색"
+          placeholder={t('accounting:customers.searchPlaceholder')}
           prefix={<SearchOutlined />}
           value={search}
           onChange={e => { setSearch(e.target.value); setPage(1); }}
@@ -145,14 +147,14 @@ const AccountingCustomersPage: React.FC = () => {
           style={{ width: 220 }}
         />
         <Select
-          placeholder="매핑 상태"
+          placeholder={t('common:filter.mappingStatus')}
           value={mappedFilter}
           onChange={v => { setMappedFilter(v); setPage(1); }}
           allowClear
           style={{ width: 130 }}
           options={[
-            { value: true, label: '매핑됨' },
-            { value: false, label: '미매핑' },
+            { value: true, label: t('common:status.mapped') },
+            { value: false, label: t('common:status.unmapped') },
           ]}
         />
       </Space>
@@ -173,7 +175,7 @@ const AccountingCustomersPage: React.FC = () => {
             total={total}
             pageSize={50}
             onChange={setPage}
-            showTotal={t => `전체 ${t}건`}
+            showTotal={(total) => t('common:pagination.totalAll', { count: total })}
           />
         </div>
       </Card>

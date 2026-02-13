@@ -1,0 +1,16 @@
+{
+  "title": "Dashboard",
+  "sellingTotal": "매출 합계 ({{count}}건)",
+  "buyingTotal": "매입 합계 ({{count}}건)",
+  "grossProfit": "영업이익 (GP)",
+  "gpMargin": "GP 마진",
+  "monthlyTrend": "{{year}}년 월별 매출/매입/영업이익 추이",
+  "customerTop": "고객별 매출 TOP 10",
+  "chartSelling": "매출",
+  "chartBuying": "매입",
+  "chartProfit": "영업이익",
+  "columnRank": "순위",
+  "columnCustomer": "고객명",
+  "columnSalesVnd": "매출 (VND)",
+  "columnCount": "건수"
+}

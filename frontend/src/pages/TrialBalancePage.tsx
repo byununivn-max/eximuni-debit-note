@@ -3,6 +3,7 @@ import {
   Card, Table, Tag, Select, Typography, Spin, Row, Col, Space,
 } from 'antd';
 import { CalculatorOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 
 const { Title, Text } = Typography;
@@ -32,22 +33,13 @@ const TYPE_COLOR: Record<string, string> = {
   revenue: 'green', expense: 'orange',
 };
 
-const TYPE_LABEL: Record<string, string> = {
-  asset: '자산', liability: '부채', equity: '자본',
-  revenue: '수익', expense: '비용',
-};
-
-const MONTH_LABELS = [
-  '', '1월', '2월', '3월', '4월', '5월', '6월',
-  '7월', '8월', '9월', '10월', '11월', '12월',
-];
-
 const fmtNum = (v: number) => {
   if (!v) return '-';
   return Number(v).toLocaleString();
 };
 
 const TrialBalancePage: React.FC = () => {
+  const { t } = useTranslation(['accounting', 'common']);
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<TrialData | null>(null);
   const [year, setYear] = useState(new Date().getFullYear());
@@ -71,51 +63,51 @@ const TrialBalancePage: React.FC = () => {
 
   const columns = [
     {
-      title: '계정코드', dataIndex: 'account_code', key: 'code',
+      title: t('accounting:trialBalance.columnAccountCode'), dataIndex: 'account_code', key: 'code',
       width: 100, fixed: 'left' as const,
       render: (v: string) => <strong>{v}</strong>,
     },
     {
-      title: '계정명', dataIndex: 'account_name_kr', key: 'name',
+      title: t('accounting:trialBalance.columnAccountName'), dataIndex: 'account_name_kr', key: 'name',
       width: 160,
       render: (v: string | null, r: TrialItem) => v || r.account_name_en || '-',
     },
     {
-      title: '유형', dataIndex: 'account_type', key: 'type',
+      title: t('accounting:trialBalance.columnType'), dataIndex: 'account_type', key: 'type',
       width: 70, align: 'center' as const,
       render: (v: string) => v
-        ? <Tag color={TYPE_COLOR[v]}>{TYPE_LABEL[v] || v}</Tag>
+        ? <Tag color={TYPE_COLOR[v]}>{t(`common:accountType.${v}`, v)}</Tag>
         : '-',
     },
     {
-      title: '기초 차변', dataIndex: 'opening_debit', key: 'od',
+      title: t('accounting:trialBalance.columnOpeningDebit'), dataIndex: 'opening_debit', key: 'od',
       width: 120, align: 'right' as const,
       render: fmtNum,
     },
     {
-      title: '기초 대변', dataIndex: 'opening_credit', key: 'oc',
+      title: t('accounting:trialBalance.columnOpeningCredit'), dataIndex: 'opening_credit', key: 'oc',
       width: 120, align: 'right' as const,
       render: fmtNum,
     },
     {
-      title: '당월 차변', dataIndex: 'period_debit', key: 'pd',
+      title: t('accounting:trialBalance.columnPeriodDebit'), dataIndex: 'period_debit', key: 'pd',
       width: 120, align: 'right' as const,
       render: fmtNum,
     },
     {
-      title: '당월 대변', dataIndex: 'period_credit', key: 'pc',
+      title: t('accounting:trialBalance.columnPeriodCredit'), dataIndex: 'period_credit', key: 'pc',
       width: 120, align: 'right' as const,
       render: fmtNum,
     },
     {
-      title: '기말 차변', dataIndex: 'closing_debit', key: 'cd',
+      title: t('accounting:trialBalance.columnClosingDebit'), dataIndex: 'closing_debit', key: 'cd',
       width: 120, align: 'right' as const,
       render: (v: number) => (
         <strong>{fmtNum(v)}</strong>
       ),
     },
     {
-      title: '기말 대변', dataIndex: 'closing_credit', key: 'cc',
+      title: t('accounting:trialBalance.columnClosingCredit'), dataIndex: 'closing_credit', key: 'cc',
       width: 120, align: 'right' as const,
       render: (v: number) => (
         <strong>{fmtNum(v)}</strong>
@@ -133,7 +125,7 @@ const TrialBalancePage: React.FC = () => {
         <Col>
           <Title level={4} style={{ margin: 0 }}>
             <CalculatorOutlined style={{ marginRight: 8 }} />
-            시산표 (Trial Balance)
+            {t('accounting:trialBalance.title')}
           </Title>
         </Col>
         <Col>
@@ -149,7 +141,7 @@ const TrialBalancePage: React.FC = () => {
               onChange={setMonth}
               style={{ width: 90 }}
               options={Array.from({ length: 12 }, (_, i) => ({
-                value: i + 1, label: MONTH_LABELS[i + 1],
+                value: i + 1, label: t(`common:month.${i + 1}`),
               }))}
             />
           </Space>
@@ -157,7 +149,7 @@ const TrialBalancePage: React.FC = () => {
       </Row>
 
       <Card
-        title={`${year}년 ${MONTH_LABELS[month]} 시산표 (${data?.items.length || 0}개 계정)`}
+        title={t('accounting:trialBalance.cardTitle', { year, month: t(`common:month.${month}`), count: data?.items.length || 0 })}
         size="small"
       >
         <Table
@@ -170,32 +162,32 @@ const TrialBalancePage: React.FC = () => {
           loading={loading}
           summary={() => {
             if (!data?.totals) return null;
-            const t = data.totals;
+            const totals = data.totals;
             return (
               <Table.Summary.Row style={{ fontWeight: 'bold', background: '#fafafa' }}>
-                <Table.Summary.Cell index={0}>합계</Table.Summary.Cell>
+                <Table.Summary.Cell index={0}>{t('common:table.total')}</Table.Summary.Cell>
                 <Table.Summary.Cell index={1} />
                 <Table.Summary.Cell index={2} />
                 <Table.Summary.Cell index={3} align="right">
-                  {fmtNum(t.opening_debit)}
+                  {fmtNum(totals.opening_debit)}
                 </Table.Summary.Cell>
                 <Table.Summary.Cell index={4} align="right">
-                  {fmtNum(t.opening_credit)}
+                  {fmtNum(totals.opening_credit)}
                 </Table.Summary.Cell>
                 <Table.Summary.Cell index={5} align="right">
-                  {fmtNum(t.period_debit)}
+                  {fmtNum(totals.period_debit)}
                 </Table.Summary.Cell>
                 <Table.Summary.Cell index={6} align="right">
-                  {fmtNum(t.period_credit)}
+                  {fmtNum(totals.period_credit)}
                 </Table.Summary.Cell>
                 <Table.Summary.Cell index={7} align="right">
                   <span style={{ color: '#1890ff' }}>
-                    {fmtNum(t.closing_debit)}
+                    {fmtNum(totals.closing_debit)}
                   </span>
                 </Table.Summary.Cell>
                 <Table.Summary.Cell index={8} align="right">
                   <span style={{ color: '#1890ff' }}>
-                    {fmtNum(t.closing_credit)}
+                    {fmtNum(totals.closing_credit)}
                   </span>
                 </Table.Summary.Cell>
               </Table.Summary.Row>

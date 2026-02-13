@@ -6,6 +6,7 @@ import {
 import {
   AppstoreOutlined, SyncOutlined, DatabaseOutlined,
 } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 
 const { Title } = Typography;
@@ -30,30 +31,32 @@ const TYPE_COLOR: Record<string, string> = {
   semi_variable: 'orange',
 };
 
-const TYPE_LABEL: Record<string, string> = {
-  fixed: '고정비',
-  variable: '변동비',
-  semi_variable: '반변동비',
-};
-
-const CATEGORY_LABEL: Record<string, string> = {
-  salary: '급여',
-  material: '재료비',
-  depreciation: '감가상각',
-  maintenance: '수선유지',
-  tax: '세금/수수료',
-  prepaid: '선급비용',
-  outsourced: '외주',
-  other: '기타',
-};
-
-const METHOD_LABEL: Record<string, string> = {
-  daily_prorate: '일할안분',
-  monthly_lump: '월 일괄',
-  revenue_based: '매출비례',
-};
-
 const CostClassificationsPage: React.FC = () => {
+  const { t } = useTranslation(['analytics', 'common']);
+
+  const TYPE_LABEL: Record<string, string> = {
+    fixed: t('common:costType.fixed'),
+    variable: t('common:costType.variable'),
+    semi_variable: t('common:costType.semi_variable'),
+  };
+
+  const CATEGORY_LABEL: Record<string, string> = {
+    salary: t('analytics:costClassification.categorySalary'),
+    material: t('analytics:costClassification.categoryMaterial'),
+    depreciation: t('analytics:costClassification.categoryDepreciation'),
+    maintenance: t('analytics:costClassification.categoryMaintenance'),
+    tax: t('analytics:costClassification.categoryTax'),
+    prepaid: t('analytics:costClassification.categoryPrepaid'),
+    outsourced: t('analytics:costClassification.categoryOutsourced'),
+    other: t('analytics:costClassification.categoryOther'),
+  };
+
+  const METHOD_LABEL: Record<string, string> = {
+    daily_prorate: t('analytics:costClassification.methodDailyProrate'),
+    monthly_lump: t('analytics:costClassification.methodMonthlyLump'),
+    revenue_based: t('analytics:costClassification.methodRevenueBased'),
+  };
+
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState<ClassificationItem[]>([]);
   const [total, setTotal] = useState(0);
@@ -81,12 +84,10 @@ const CostClassificationsPage: React.FC = () => {
     setSeeding(true);
     try {
       const res = await api.post('/api/v1/cost-classifications/seed');
-      message.success(
-        `시딩 완료: ${res.data.created}건 생성, ${res.data.skipped}건 스킵`,
-      );
+      message.success(t('common:message.success'));
       fetchData();
     } catch (err: any) {
-      message.error(err.response?.data?.detail || '시딩 실패');
+      message.error(err.response?.data?.detail || t('common:message.failed'));
     } finally {
       setSeeding(false);
     }
@@ -99,47 +100,47 @@ const CostClassificationsPage: React.FC = () => {
 
   const columns = [
     {
-      title: '계정코드', dataIndex: 'account_code', key: 'code',
+      title: t('analytics:costClassification.columnAccountCode'), dataIndex: 'account_code', key: 'code',
       width: 100, fixed: 'left' as const,
       render: (v: string) => <strong>{v}</strong>,
     },
     {
-      title: '비용유형', dataIndex: 'cost_type', key: 'type',
+      title: t('analytics:costClassification.columnCostType'), dataIndex: 'cost_type', key: 'type',
       width: 100, align: 'center' as const,
       render: (v: string) => (
         <Tag color={TYPE_COLOR[v]}>{TYPE_LABEL[v] || v}</Tag>
       ),
     },
     {
-      title: '분류', dataIndex: 'cost_category', key: 'cat',
+      title: t('analytics:costClassification.columnCategory'), dataIndex: 'cost_category', key: 'cat',
       width: 100, align: 'center' as const,
       render: (v: string) => CATEGORY_LABEL[v] || v,
     },
     {
-      title: '안분방법', dataIndex: 'allocation_method', key: 'method',
+      title: t('analytics:costClassification.columnAllocationMethod'), dataIndex: 'allocation_method', key: 'method',
       width: 100, align: 'center' as const,
       render: (v: string) => (
         <Tag>{METHOD_LABEL[v] || v}</Tag>
       ),
     },
     {
-      title: '설명 (VN)', dataIndex: 'description_vn', key: 'vn',
+      title: t('analytics:costClassification.columnDescVn'), dataIndex: 'description_vn', key: 'vn',
       ellipsis: true,
     },
     {
-      title: '설명 (EN)', dataIndex: 'description_en', key: 'en',
+      title: t('analytics:costClassification.columnDescEn'), dataIndex: 'description_en', key: 'en',
       ellipsis: true,
     },
     {
-      title: '비용센터', dataIndex: 'cost_center_code', key: 'cc',
+      title: t('analytics:costClassification.columnCostCenter'), dataIndex: 'cost_center_code', key: 'cc',
       width: 100, align: 'center' as const,
-      render: (v: string | null) => v || '전사',
+      render: (v: string | null) => v || t('analytics:costClassification.companyWide'),
     },
     {
-      title: '상태', dataIndex: 'is_active', key: 'active',
+      title: t('analytics:costClassification.columnStatus'), dataIndex: 'is_active', key: 'active',
       width: 70, align: 'center' as const,
       render: (v: boolean) => (
-        <Tag color={v ? 'green' : 'default'}>{v ? '활성' : '비활성'}</Tag>
+        <Tag color={v ? 'green' : 'default'}>{v ? t('common:status.active') : t('common:status.inactive')}</Tag>
       ),
     },
   ];
@@ -154,16 +155,16 @@ const CostClassificationsPage: React.FC = () => {
         <Col>
           <Title level={4} style={{ margin: 0 }}>
             <AppstoreOutlined style={{ marginRight: 8 }} />
-            비용 분류 ({total}건)
+            {t('analytics:costClassification.titleCount', { count: total })}
           </Title>
         </Col>
         <Col>
-          <Popconfirm title="642x 초기 비용 분류 시딩?" onConfirm={handleSeed}>
+          <Popconfirm title={t('analytics:costClassification.seedConfirm')} onConfirm={handleSeed}>
             <Button
               icon={<DatabaseOutlined />}
               loading={seeding}
             >
-              642x 시딩
+              {t('analytics:costClassification.seedButton')}
             </Button>
           </Popconfirm>
         </Col>
@@ -172,13 +173,13 @@ const CostClassificationsPage: React.FC = () => {
       <Row gutter={16} style={{ marginBottom: 16 }}>
         <Col span={6}>
           <Card size="small">
-            <Statistic title="전체" value={total} suffix="건" />
+            <Statistic title={t('analytics:costClassification.total')} value={total} suffix="건" />
           </Card>
         </Col>
         <Col span={6}>
           <Card size="small">
             <Statistic
-              title="고정비"
+              title={t('common:costType.fixed')}
               value={fixedCount}
               suffix="건"
               valueStyle={{ color: '#cf1322' }}
@@ -188,7 +189,7 @@ const CostClassificationsPage: React.FC = () => {
         <Col span={6}>
           <Card size="small">
             <Statistic
-              title="변동비"
+              title={t('common:costType.variable')}
               value={variableCount}
               suffix="건"
               valueStyle={{ color: '#3f8600' }}
@@ -198,7 +199,7 @@ const CostClassificationsPage: React.FC = () => {
         <Col span={6}>
           <Card size="small">
             <Statistic
-              title="반변동비"
+              title={t('common:costType.semi_variable')}
               value={semiCount}
               suffix="건"
               valueStyle={{ color: '#d46b08' }}
@@ -209,15 +210,15 @@ const CostClassificationsPage: React.FC = () => {
 
       <Space style={{ marginBottom: 16 }}>
         <Select
-          placeholder="비용유형 필터"
+          placeholder={t('analytics:costClassification.typeFilter')}
           value={typeFilter}
           onChange={setTypeFilter}
           allowClear
           style={{ width: 150 }}
           options={[
-            { value: 'fixed', label: '고정비' },
-            { value: 'variable', label: '변동비' },
-            { value: 'semi_variable', label: '반변동비' },
+            { value: 'fixed', label: t('common:costType.fixed') },
+            { value: 'variable', label: t('common:costType.variable') },
+            { value: 'semi_variable', label: t('common:costType.semi_variable') },
           ]}
         />
       </Space>
