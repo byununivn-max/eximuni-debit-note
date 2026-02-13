@@ -9,26 +9,14 @@ import {
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import api from '../services/api';
+import type { AccountingCustomerItem } from '../types/accounting';
 
 const { Title } = Typography;
-
-interface CustomerItem {
-  customer_id: number;
-  tax_id: string;
-  customer_name_vn: string | null;
-  customer_name_en: string | null;
-  mssql_client_ref: number | null;
-  default_ar_account: string;
-  default_revenue_account: string;
-  currency_code: string;
-  source: string;
-  is_active: boolean;
-}
 
 const AccountingCustomersPage: React.FC = () => {
   const { t } = useTranslation(['accounting', 'common']);
   const [loading, setLoading] = useState(true);
-  const [items, setItems] = useState<CustomerItem[]>([]);
+  const [items, setItems] = useState<AccountingCustomerItem[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');

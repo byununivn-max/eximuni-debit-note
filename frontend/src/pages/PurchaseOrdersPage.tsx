@@ -11,54 +11,9 @@ import {
 import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
 import api from '../services/api';
+import type { PurchaseOrder, SupplierOption } from '../types/trading';
 
 const { Title } = Typography;
-
-interface PurchaseItem {
-  item_id?: number;
-  po_id?: number;
-  description: string;
-  cost_category?: string;
-  quantity: number;
-  unit_price: number;
-  currency: string;
-  amount: number;
-  is_vat_applicable: boolean;
-  notes?: string;
-}
-
-interface PurchaseOrder {
-  po_id: number;
-  po_number: string;
-  supplier_id: number;
-  supplier_name?: string;
-  mssql_shipment_ref?: number;
-  service_type?: string;
-  invoice_no?: string;
-  invoice_date?: string;
-  amount: number;
-  currency: string;
-  exchange_rate?: number;
-  amount_vnd?: number;
-  vat_rate?: number;
-  vat_amount?: number;
-  total_amount: number;
-  payment_status: string;
-  status: string;
-  approved_by?: number;
-  approved_at?: string;
-  created_by?: number;
-  notes?: string;
-  created_at: string;
-  updated_at: string;
-  items: PurchaseItem[];
-}
-
-interface Supplier {
-  supplier_id: number;
-  supplier_code: string;
-  supplier_name: string;
-}
 
 const STATUS_COLORS: Record<string, string> = {
   DRAFT: 'default',
@@ -84,7 +39,7 @@ const COST_CATEGORY_KEYS: Record<string, string> = {
 const PurchaseOrdersPage: React.FC = () => {
   const { t } = useTranslation(['trading', 'common']);
   const [orders, setOrders] = useState<PurchaseOrder[]>([]);
-  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [suppliers, setSuppliers] = useState<SupplierOption[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);

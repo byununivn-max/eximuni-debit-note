@@ -9,20 +9,9 @@ import {
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import api from '../services/api';
+import type { VendorItem } from '../types/accounting';
 
 const { Title } = Typography;
-
-interface VendorItem {
-  vendor_id: number;
-  tax_id: string;
-  vendor_name_vn: string | null;
-  vendor_name_en: string | null;
-  mssql_supplier_ref: number | null;
-  default_ap_account: string;
-  currency_code: string;
-  source: string;
-  is_active: boolean;
-}
 
 const AccountingVendorsPage: React.FC = () => {
   const { t } = useTranslation(['accounting', 'common']);

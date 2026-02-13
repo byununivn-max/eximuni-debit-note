@@ -9,59 +9,11 @@ import {
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import api from '../services/api';
+import type {
+  JournalListItem, JournalLine, JournalDetail, JournalSummary,
+} from '../types/journal';
 
 const { Title, Text } = Typography;
-
-interface JournalListItem {
-  entry_id: number;
-  entry_number: string;
-  module: string;
-  fiscal_year: number;
-  fiscal_month: number;
-  entry_date: string;
-  description_vn: string | null;
-  description_kr: string | null;
-  currency_code: string;
-  total_debit: number;
-  total_credit: number;
-  status: string;
-  source: string;
-  vendor_id: string | null;
-  customer_id: string | null;
-  created_at: string;
-}
-
-interface JournalLine {
-  line_id: number;
-  line_number: number;
-  account_code: string;
-  description_vn: string | null;
-  description_en: string | null;
-  debit_amount: number;
-  credit_amount: number;
-  vendor_id: string | null;
-  customer_id: string | null;
-  tax_code: string | null;
-  tax_amount: number | null;
-}
-
-interface JournalDetail extends JournalListItem {
-  voucher_date: string | null;
-  description_en: string | null;
-  exchange_rate: number | null;
-  smartbooks_batch_nbr: string | null;
-  employee_id: string | null;
-  invoice_no: string | null;
-  lines: JournalLine[];
-}
-
-interface Summary {
-  by_module: Record<string, number>;
-  by_status: Record<string, number>;
-  total_debit: number;
-  total_credit: number;
-  total_entries: number;
-}
 
 const MODULE_COLOR: Record<string, string> = {
   GL: 'blue', AP: 'red', AR: 'green', CA: 'orange', OF: 'purple',
@@ -76,7 +28,7 @@ const JournalEntriesPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState<JournalListItem[]>([]);
   const [total, setTotal] = useState(0);
-  const [summary, setSummary] = useState<Summary | null>(null);
+  const [summary, setJournalSummary] = useState<JournalSummary | null>(null);
   const [page, setPage] = useState(1);
   const [size] = useState(50);
   const [module, setModule] = useState<string | undefined>(undefined);
@@ -103,7 +55,7 @@ const JournalEntriesPage: React.FC = () => {
       ]);
       setItems(listRes.data.items);
       setTotal(listRes.data.total);
-      setSummary(sumRes.data);
+      setJournalSummary(sumRes.data);
     } catch (err) {
       console.error(err);
     } finally {

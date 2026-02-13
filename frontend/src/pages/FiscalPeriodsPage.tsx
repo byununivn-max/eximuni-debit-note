@@ -9,19 +9,9 @@ import {
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import api from '../services/api';
+import type { FiscalPeriodItem } from '../types/accounting';
 
 const { Title } = Typography;
-
-interface FiscalPeriodItem {
-  period_id: number;
-  fiscal_year: number;
-  period_month: number;
-  start_date: string;
-  end_date: string;
-  is_closed: boolean;
-  closed_at: string | null;
-  closed_by: number | null;
-}
 
 const MONTH_LABELS = [
   '', '1월', '2월', '3월', '4월', '5월', '6월',

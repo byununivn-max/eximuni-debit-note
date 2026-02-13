@@ -8,36 +8,11 @@ import {
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import api from '../services/api';
+import type {
+  MonthlyCostSummaryItem, MonthlyCostOverview,
+} from '../types/cost';
 
 const { Title, Text } = Typography;
-
-interface SummaryItem {
-  summary_id: number;
-  fiscal_year: number;
-  fiscal_month: number;
-  account_code: string;
-  cost_type: string;
-  cost_center_code: string | null;
-  total_amount: number;
-  daily_allocated_amount: number;
-  working_days: number;
-}
-
-interface CostByType {
-  cost_type: string;
-  total_amount: number;
-  daily_allocated: number;
-  account_count: number;
-}
-
-interface Overview {
-  fiscal_year: number;
-  fiscal_month: number;
-  working_days: number;
-  by_type: CostByType[];
-  grand_total: number;
-  grand_daily: number;
-}
 
 const TYPE_COLOR: Record<string, string> = {
   fixed: 'red',
@@ -60,9 +35,9 @@ const MonthlyCostSummaryPage: React.FC = () => {
   };
 
   const [loading, setLoading] = useState(true);
-  const [items, setItems] = useState<SummaryItem[]>([]);
+  const [items, setItems] = useState<MonthlyCostSummaryItem[]>([]);
   const [total, setTotal] = useState(0);
-  const [overview, setOverview] = useState<Overview | null>(null);
+  const [overview, setOverview] = useState<MonthlyCostOverview | null>(null);
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [typeFilter, setTypeFilter] = useState<string | undefined>(undefined);

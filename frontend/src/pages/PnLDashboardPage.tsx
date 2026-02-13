@@ -10,31 +10,9 @@ import {
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import api from '../services/api';
+import type { YearSummary } from '../types/pnl';
 
 const { Title, Text } = Typography;
-
-interface PnLMonth {
-  fiscal_month: number;
-  revenue: number;
-  cogs: number;
-  gross_profit: number;
-  gp_margin: number;
-  operating_profit: number;
-  net_profit: number;
-  net_margin: number;
-}
-
-interface YearSummary {
-  fiscal_year: number;
-  months: PnLMonth[];
-  ytd_revenue: number;
-  ytd_cogs: number;
-  ytd_gross_profit: number;
-  ytd_gp_margin: number;
-  ytd_operating_profit: number;
-  ytd_net_profit: number;
-  ytd_net_margin: number;
-}
 
 const fmtNum = (v: number) => {
   if (!v && v !== 0) return '-';

@@ -36,6 +36,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { authService } from '../services/auth';
 import { msalEnabled } from '../msalConfig';
+import { hasRouteAccess } from '../config/rolePermissions';
 import LanguageSwitcher from './LanguageSwitcher';
 
 const { Header, Sider, Content } = Layout;
@@ -180,6 +181,17 @@ const AppLayout: React.FC = () => {
     },
   ];
 
+  // 역할 기반 메뉴 필터링
+  const userRole = user?.role || 'pic';
+  const filteredMenuItems = menuItems
+    .map((group) => ({
+      ...group,
+      children: group.children?.filter((item) =>
+        hasRouteAccess(userRole, item.key as string)
+      ),
+    }))
+    .filter((group) => group.children && group.children.length > 0);
+
   const roleColor = user?.role === 'admin' ? 'red' : user?.role === 'accountant' ? 'blue' : 'green';
 
   return (
@@ -198,7 +210,7 @@ const AppLayout: React.FC = () => {
           mode="inline"
           selectedKeys={[location.pathname]}
           defaultOpenKeys={[defaultOpenGroup]}
-          items={menuItems}
+          items={filteredMenuItems}
           onClick={({ key }) => {
             if (!key.startsWith('grp-')) navigate(key);
           }}

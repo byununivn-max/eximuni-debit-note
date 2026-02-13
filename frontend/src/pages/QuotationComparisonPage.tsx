@@ -10,36 +10,9 @@ import {
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import api from '../services/api';
+import type { QuotationActual, QuotationSummary } from '../types/quotation';
 
 const { Title, Text } = Typography;
-
-interface QuotationActual {
-  comparison_id: number;
-  mssql_shipment_ref: string | null;
-  customer_id: number | null;
-  customer_name: string | null;
-  service_type: string;
-  quotation_amount: number;
-  actual_selling: number;
-  actual_buying: number;
-  variance_selling: number;
-  variance_buying: number;
-  variance_gp: number;
-  invoice_no: string | null;
-  analysis_date: string | null;
-  notes: string | null;
-}
-
-interface Summary {
-  total_count: number;
-  total_quotation: number;
-  total_selling: number;
-  total_buying: number;
-  total_gp: number;
-  variance_selling: number;
-  variance_gp: number;
-  accuracy_rate: number;
-}
 
 const TYPE_COLOR: Record<string, string> = {
   clearance: 'blue',
@@ -57,7 +30,7 @@ const QuotationComparisonPage: React.FC = () => {
   const { t } = useTranslation(['analytics', 'common']);
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState<QuotationActual[]>([]);
-  const [summary, setSummary] = useState<Summary | null>(null);
+  const [summary, setSummary] = useState<QuotationSummary | null>(null);
   const [year, setYear] = useState<number | undefined>(new Date().getFullYear());
   const [serviceType, setServiceType] = useState<string | undefined>(undefined);
   const [search, setSearch] = useState('');

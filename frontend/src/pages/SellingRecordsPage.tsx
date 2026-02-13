@@ -11,46 +11,12 @@ import {
 import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
 import api from '../services/api';
+import type {
+  SellingRecord, SellingSummary,
+} from '../types/selling';
 
 const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
-
-interface SellingItem {
-  item_id: number;
-  selling_id: number;
-  fee_name: string;
-  fee_category?: string;
-  amount: number;
-  currency: string;
-  mssql_source_column?: string;
-}
-
-interface SellingRecord {
-  selling_id: number;
-  record_type: string;
-  mssql_source_id: number;
-  mssql_cost_id?: number;
-  customer_name?: string;
-  invoice_no?: string;
-  service_date?: string;
-  total_selling_vnd: number;
-  item_count: number;
-  sync_status: string;
-  synced_at: string;
-  items?: SellingItem[];
-}
-
-interface SummaryItem {
-  record_type: string;
-  count: number;
-  total_vnd: number;
-}
-
-interface Summary {
-  items: SummaryItem[];
-  grand_total_vnd: number;
-  total_records: number;
-}
 
 const TYPE_LABEL_KEYS: Record<string, string> = {
   clearance: 'trading:selling.typeClearance',
@@ -91,7 +57,7 @@ const SellingRecordsPage: React.FC = () => {
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<string | undefined>();
   const [dateRange, setDateRange] = useState<[string, string] | null>(null);
-  const [summary, setSummary] = useState<Summary | null>(null);
+  const [summary, setSummary] = useState<SellingSummary | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [detailRecord, setDetailRecord] = useState<SellingRecord | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);

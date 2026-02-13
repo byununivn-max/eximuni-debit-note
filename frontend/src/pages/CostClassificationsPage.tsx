@@ -8,22 +8,9 @@ import {
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import api from '../services/api';
+import type { ClassificationItem } from '../types/cost';
 
 const { Title } = Typography;
-
-interface ClassificationItem {
-  classification_id: number;
-  account_code: string;
-  cost_type: string;
-  cost_category: string;
-  allocation_method: string;
-  cost_center_code: string | null;
-  description_vn: string | null;
-  description_en: string | null;
-  is_active: boolean;
-  effective_from: string | null;
-  effective_to: string | null;
-}
 
 const TYPE_COLOR: Record<string, string> = {
   fixed: 'red',

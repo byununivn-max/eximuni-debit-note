@@ -6,28 +6,9 @@ import {
 import { PlusOutlined, EditOutlined, SearchOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import api from '../services/api';
+import type { Supplier } from '../types/trading';
 
 const { Title } = Typography;
-
-interface Supplier {
-  supplier_id: number;
-  supplier_code: string;
-  supplier_name: string;
-  supplier_type: string;
-  contact_person?: string;
-  contact_email?: string;
-  contact_phone?: string;
-  tax_id?: string;
-  bank_account?: string;
-  bank_name?: string;
-  payment_terms?: string;
-  currency: string;
-  address?: string;
-  notes?: string;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-}
 
 const SUPPLIER_TYPE_KEYS: Record<string, string> = {
   shipping_line: 'common:supplierType.shipping_line',

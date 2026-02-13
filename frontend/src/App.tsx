@@ -10,8 +10,11 @@ import { PublicClientApplication } from '@azure/msal-browser';
 import { MsalProvider } from '@azure/msal-react';
 import { msalConfig, msalEnabled } from './msalConfig';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { hasRouteAccess } from './config/rolePermissions';
+import ErrorBoundary from './components/ErrorBoundary';
 import AppLayout from './components/AppLayout';
 import LoginPage from './pages/LoginPage';
+import ForbiddenPage from './pages/ForbiddenPage';
 import DashboardPage from './pages/DashboardPage';
 import ClientsPage from './pages/ClientsPage';
 import ShipmentsPage from './pages/ShipmentsPage';
@@ -48,6 +51,13 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
 };
 
+/** 역할 기반 라우트 보호 — 권한 없으면 403 페이지 */
+const RoleProtectedRoute: React.FC<{ path: string; children: React.ReactNode }> = ({ path, children }) => {
+  const { user } = useAuth();
+  const role = user?.role || 'pic';
+  return hasRouteAccess(role, path) ? <>{children}</> : <ForbiddenPage />;
+};
+
 const AppRoutes: React.FC = () => {
   const { isAuthenticated } = useAuth();
 
@@ -55,33 +65,33 @@ const AppRoutes: React.FC = () => {
     <Routes>
       <Route path="/login" element={isAuthenticated ? <Navigate to="/" replace /> : <LoginPage />} />
       <Route path="/" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
-        <Route index element={<DashboardPage />} />
-        <Route path="clients" element={<ClientsPage />} />
-        <Route path="shipments" element={<ShipmentsPage />} />
-        <Route path="clearance" element={<ClearancePage />} />
-        <Route path="ops" element={<OpsPage />} />
-        <Route path="co" element={<COPage />} />
-        <Route path="suppliers" element={<SuppliersPage />} />
-        <Route path="purchase-orders" element={<PurchaseOrdersPage />} />
-        <Route path="selling-records" element={<SellingRecordsPage />} />
-        <Route path="debit-notes" element={<DebitNotesPage />} />
-        <Route path="exchange-rates" element={<ExchangeRatesPage />} />
-        <Route path="profit-dashboard" element={<ProfitDashboardPage />} />
-        <Route path="chart-of-accounts" element={<ChartOfAccountsPage />} />
-        <Route path="fiscal-periods" element={<FiscalPeriodsPage />} />
-        <Route path="journal-entries" element={<JournalEntriesPage />} />
-        <Route path="smartbooks-import" element={<SmartBooksImportPage />} />
-        <Route path="accounting-vendors" element={<AccountingVendorsPage />} />
-        <Route path="accounting-customers" element={<AccountingCustomersPage />} />
-        <Route path="trial-balance" element={<TrialBalancePage />} />
-        <Route path="cost-classifications" element={<CostClassificationsPage />} />
-        <Route path="monthly-cost-summary" element={<MonthlyCostSummaryPage />} />
-        <Route path="pnl-dashboard" element={<PnLDashboardPage />} />
-        <Route path="customer-profitability" element={<ProfitabilityPage />} />
-        <Route path="shipment-profit" element={<ShipmentProfitPage />} />
-        <Route path="quotation-comparison" element={<QuotationComparisonPage />} />
-        <Route path="financial-reports" element={<FinancialReportsPage />} />
-        <Route path="audit-logs" element={<AuditLogsPage />} />
+        <Route index element={<RoleProtectedRoute path="/"><DashboardPage /></RoleProtectedRoute>} />
+        <Route path="clients" element={<RoleProtectedRoute path="/clients"><ClientsPage /></RoleProtectedRoute>} />
+        <Route path="shipments" element={<RoleProtectedRoute path="/shipments"><ShipmentsPage /></RoleProtectedRoute>} />
+        <Route path="clearance" element={<RoleProtectedRoute path="/clearance"><ClearancePage /></RoleProtectedRoute>} />
+        <Route path="ops" element={<RoleProtectedRoute path="/ops"><OpsPage /></RoleProtectedRoute>} />
+        <Route path="co" element={<RoleProtectedRoute path="/co"><COPage /></RoleProtectedRoute>} />
+        <Route path="suppliers" element={<RoleProtectedRoute path="/suppliers"><SuppliersPage /></RoleProtectedRoute>} />
+        <Route path="purchase-orders" element={<RoleProtectedRoute path="/purchase-orders"><PurchaseOrdersPage /></RoleProtectedRoute>} />
+        <Route path="selling-records" element={<RoleProtectedRoute path="/selling-records"><SellingRecordsPage /></RoleProtectedRoute>} />
+        <Route path="debit-notes" element={<RoleProtectedRoute path="/debit-notes"><DebitNotesPage /></RoleProtectedRoute>} />
+        <Route path="exchange-rates" element={<RoleProtectedRoute path="/exchange-rates"><ExchangeRatesPage /></RoleProtectedRoute>} />
+        <Route path="profit-dashboard" element={<RoleProtectedRoute path="/profit-dashboard"><ProfitDashboardPage /></RoleProtectedRoute>} />
+        <Route path="chart-of-accounts" element={<RoleProtectedRoute path="/chart-of-accounts"><ChartOfAccountsPage /></RoleProtectedRoute>} />
+        <Route path="fiscal-periods" element={<RoleProtectedRoute path="/fiscal-periods"><FiscalPeriodsPage /></RoleProtectedRoute>} />
+        <Route path="journal-entries" element={<RoleProtectedRoute path="/journal-entries"><JournalEntriesPage /></RoleProtectedRoute>} />
+        <Route path="smartbooks-import" element={<RoleProtectedRoute path="/smartbooks-import"><SmartBooksImportPage /></RoleProtectedRoute>} />
+        <Route path="accounting-vendors" element={<RoleProtectedRoute path="/accounting-vendors"><AccountingVendorsPage /></RoleProtectedRoute>} />
+        <Route path="accounting-customers" element={<RoleProtectedRoute path="/accounting-customers"><AccountingCustomersPage /></RoleProtectedRoute>} />
+        <Route path="trial-balance" element={<RoleProtectedRoute path="/trial-balance"><TrialBalancePage /></RoleProtectedRoute>} />
+        <Route path="cost-classifications" element={<RoleProtectedRoute path="/cost-classifications"><CostClassificationsPage /></RoleProtectedRoute>} />
+        <Route path="monthly-cost-summary" element={<RoleProtectedRoute path="/monthly-cost-summary"><MonthlyCostSummaryPage /></RoleProtectedRoute>} />
+        <Route path="pnl-dashboard" element={<RoleProtectedRoute path="/pnl-dashboard"><PnLDashboardPage /></RoleProtectedRoute>} />
+        <Route path="customer-profitability" element={<RoleProtectedRoute path="/customer-profitability"><ProfitabilityPage /></RoleProtectedRoute>} />
+        <Route path="shipment-profit" element={<RoleProtectedRoute path="/shipment-profit"><ShipmentProfitPage /></RoleProtectedRoute>} />
+        <Route path="quotation-comparison" element={<RoleProtectedRoute path="/quotation-comparison"><QuotationComparisonPage /></RoleProtectedRoute>} />
+        <Route path="financial-reports" element={<RoleProtectedRoute path="/financial-reports"><FinancialReportsPage /></RoleProtectedRoute>} />
+        <Route path="audit-logs" element={<RoleProtectedRoute path="/audit-logs"><AuditLogsPage /></RoleProtectedRoute>} />
       </Route>
     </Routes>
   );
@@ -94,13 +104,15 @@ const AppContent: React.FC = () => {
   const antdLocale = antdLocaleMap[i18n.language] || antdLocaleMap[i18n.language?.split('-')[0]] || koKR;
 
   return (
-    <ConfigProvider locale={antdLocale}>
-      <BrowserRouter>
-        <AuthProvider>
-          <AppRoutes />
-        </AuthProvider>
-      </BrowserRouter>
-    </ConfigProvider>
+    <ErrorBoundary>
+      <ConfigProvider locale={antdLocale}>
+        <BrowserRouter>
+          <AuthProvider>
+            <AppRoutes />
+          </AuthProvider>
+        </BrowserRouter>
+      </ConfigProvider>
+    </ErrorBoundary>
   );
 };
 

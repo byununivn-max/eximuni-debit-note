@@ -24,7 +24,8 @@
     "reopen": "Reopen",
     "login": "Login",
     "logout": "Logout",
-    "newRegister": "New"
+    "newRegister": "New",
+    "backToHome": "Back to Home"
   },
   "table": {
     "id": "ID",
@@ -71,7 +72,8 @@
     "importSuccess": "Imported successfully",
     "importFailed": "Failed to import",
     "noCostInfo": "No cost information linked",
-    "noCostItems": "No cost items registered."
+    "noCostItems": "No cost items registered.",
+    "forbidden": "You do not have permission to access this page."
   },
   "status": {
     "active": "Active",

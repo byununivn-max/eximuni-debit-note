@@ -5,28 +5,9 @@ import {
 import { CalculatorOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import api from '../services/api';
+import type { TrialItem, TrialData } from '../types/accounting';
 
 const { Title, Text } = Typography;
-
-interface TrialItem {
-  account_code: string;
-  account_name_kr: string | null;
-  account_name_en: string | null;
-  account_type: string | null;
-  opening_debit: number;
-  opening_credit: number;
-  period_debit: number;
-  period_credit: number;
-  closing_debit: number;
-  closing_credit: number;
-}
-
-interface TrialData {
-  fiscal_year: number;
-  fiscal_month: number;
-  items: TrialItem[];
-  totals: TrialItem;
-}
 
 const TYPE_COLOR: Record<string, string> = {
   asset: 'blue', liability: 'red', equity: 'purple',

@@ -8,33 +8,10 @@ import {
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import api from '../services/api';
+import type { WorkflowItem, AuditLogItem } from '../types/accounting';
 
 const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
-
-interface WorkflowItem {
-  workflow_id: number;
-  entity_type: string;
-  entity_id: number;
-  action: string;
-  from_status?: string;
-  to_status?: string;
-  performed_by?: number;
-  comment?: string;
-  created_at: string;
-}
-
-interface AuditLogItem {
-  audit_id: number;
-  entity_type: string;
-  entity_id: number;
-  action: string;
-  old_values?: Record<string, any>;
-  new_values?: Record<string, any>;
-  performed_by?: number;
-  ip_address?: string;
-  action_at: string;
-}
 
 const ENTITY_LABELS: Record<string, string> = {
   debit_note: 'Debit Note',

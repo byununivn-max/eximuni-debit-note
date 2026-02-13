@@ -8,20 +8,9 @@ import {
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import api from '../services/api';
+import type { ShipmentProfit } from '../types/profitability';
 
 const { Title, Text } = Typography;
-
-interface ShipmentProfit {
-  selling_id: number;
-  record_type: string;
-  customer_name: string;
-  invoice_no: string | null;
-  service_date: string | null;
-  selling_amount: number;
-  buying_amount: number;
-  gross_profit: number;
-  gp_margin: number;
-}
 
 const TYPE_COLOR: Record<string, string> = {
   clearance: 'blue',

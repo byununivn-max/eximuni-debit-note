@@ -10,50 +10,11 @@ import {
 import type { DataNode } from 'antd/es/tree';
 import { useTranslation } from 'react-i18next';
 import api from '../services/api';
+import type {
+  CoAItem, CoATreeNode, CostCenterItem, CoASummary,
+} from '../types/accounting';
 
 const { Title } = Typography;
-
-interface CoAItem {
-  account_id: number;
-  account_code: string;
-  account_name_vn: string;
-  account_name_en: string;
-  account_name_kr: string;
-  account_type: string;
-  account_group: string;
-  normal_balance: string;
-  is_active: boolean;
-  smartbooks_mapped: boolean;
-}
-
-interface CoATreeNode {
-  account_id: number;
-  account_code: string;
-  account_name_vn: string;
-  account_name_en: string;
-  account_name_kr: string;
-  account_type: string;
-  account_group: string;
-  normal_balance: string;
-  is_active: boolean;
-  smartbooks_mapped: boolean;
-  children: CoATreeNode[];
-}
-
-interface CostCenterItem {
-  center_id: number;
-  center_code: string;
-  center_name_vn: string;
-  center_name_en: string;
-  center_name_kr: string;
-  center_type: string;
-  is_active: boolean;
-}
-
-interface Summary {
-  by_type: Record<string, number>;
-  total: number;
-}
 
 const TYPE_COLOR: Record<string, string> = {
   asset: 'blue',
@@ -71,7 +32,7 @@ const ChartOfAccountsPage: React.FC = () => {
   const [accounts, setAccounts] = useState<CoAItem[]>([]);
   const [treeData, setTreeData] = useState<CoATreeNode[]>([]);
   const [costCenters, setCostCenters] = useState<CostCenterItem[]>([]);
-  const [summary, setSummary] = useState<Summary | null>(null);
+  const [summary, setSummary] = useState<CoASummary | null>(null);
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<string | undefined>(undefined);
   const [seeding, setSeeding] = useState(false);

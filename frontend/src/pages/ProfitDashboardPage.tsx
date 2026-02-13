@@ -5,21 +5,9 @@ import {
 import { Bar } from '@ant-design/charts';
 import { useTranslation } from 'react-i18next';
 import api from '../services/api';
+import type { CustomerItem, MonthlyItem } from '../types/dashboard';
 
 const { Title } = Typography;
-
-interface CustomerItem {
-  customer_name: string;
-  total_vnd: number;
-  count: number;
-}
-
-interface MonthlyItem {
-  month: number;
-  selling: number;
-  buying: number;
-  profit: number;
-}
 
 const ProfitDashboardPage: React.FC = () => {
   const { t } = useTranslation(['analytics', 'common']);

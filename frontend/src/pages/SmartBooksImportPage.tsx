@@ -10,36 +10,19 @@ import {
 import type { UploadFile } from 'antd';
 import { useTranslation } from 'react-i18next';
 import api from '../services/api';
+import type {
+  SmartBooksPreviewRow, SmartBooksImportResult,
+} from '../types/accounting';
 
 const { Title, Text } = Typography;
-
-interface PreviewRow {
-  Module: string;
-  'Batch Nbr': string;
-  'Ref Nbr': string;
-  'Acct Period': string;
-  'Voucher Date': string;
-  Account: string;
-  'Dr Amount': number;
-  'Cr Amount': number;
-  'Description VN': string;
-  [key: string]: any;
-}
-
-interface ImportResult {
-  entries_created: number;
-  lines_created: number;
-  errors: string[];
-  skipped: number;
-}
 
 const SmartBooksImportPage: React.FC = () => {
   const { t } = useTranslation(['accounting', 'common']);
   const [step, setStep] = useState(0);
   const [fileList, setFileList] = useState<UploadFile[]>([]);
-  const [previewData, setPreviewData] = useState<PreviewRow[]>([]);
+  const [previewData, setPreviewData] = useState<SmartBooksPreviewRow[]>([]);
   const [importing, setImporting] = useState(false);
-  const [result, setResult] = useState<ImportResult | null>(null);
+  const [result, setResult] = useState<SmartBooksImportResult | null>(null);
   const [parsing, setParsing] = useState(false);
 
   /** Excel 파일 파싱 (프론트엔드에서 XLSX 읽기) */

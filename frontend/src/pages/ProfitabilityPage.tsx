@@ -7,17 +7,9 @@ import {
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import api from '../services/api';
+import type { CustomerProfit } from '../types/profitability';
 
 const { Title, Text } = Typography;
-
-interface CustomerProfit {
-  customer_name: string;
-  deal_count: number;
-  total_selling: number;
-  total_buying: number;
-  gross_profit: number;
-  gp_margin: number;
-}
 
 const fmtNum = (v: number) => {
   if (!v && v !== 0) return '-';

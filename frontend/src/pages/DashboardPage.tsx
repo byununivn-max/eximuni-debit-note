@@ -10,31 +10,10 @@ import {
 import { Column } from '@ant-design/charts';
 import { useTranslation } from 'react-i18next';
 import api from '../services/api';
+import type { Kpi, MonthlyItem, CustomerItem } from '../types/dashboard';
 
 const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
-
-interface Kpi {
-  total_selling_vnd: number;
-  total_buying_vnd: number;
-  gross_profit_vnd: number;
-  gp_margin_pct: number;
-  selling_count: number;
-  buying_count: number;
-}
-
-interface MonthlyItem {
-  month: number;
-  selling: number;
-  buying: number;
-  profit: number;
-}
-
-interface CustomerItem {
-  customer_name: string;
-  total_vnd: number;
-  count: number;
-}
 
 const DashboardPage: React.FC = () => {
   const { t } = useTranslation(['dashboard', 'common']);

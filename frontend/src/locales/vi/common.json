@@ -24,7 +24,8 @@
     "reopen": "Mở lại",
     "login": "Đăng nhập",
     "logout": "Đăng xuất",
-    "newRegister": "Đăng ký mới"
+    "newRegister": "Đăng ký mới",
+    "backToHome": "Về trang chủ"
   },
   "table": {
     "id": "ID",
@@ -71,7 +72,8 @@
     "importSuccess": "Nhập thành công",
     "importFailed": "Lỗi nhập",
     "noCostInfo": "Không có thông tin chi phí liên kết",
-    "noCostItems": "Chưa có khoản chi phí nào."
+    "noCostItems": "Chưa có khoản chi phí nào.",
+    "forbidden": "Bạn không có quyền truy cập trang này."
   },
   "status": {
     "active": "Hoạt động",
