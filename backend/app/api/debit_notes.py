@@ -25,6 +25,7 @@ from app.schemas.debit_note import (
     DebitNoteCreate, DebitNoteResponse, DebitNoteListResponse,
     DebitNoteLineResponse, WorkflowAction, DebitNoteWorkflowResponse,
 )
+from app.utils.pagination import paginate
 
 router = APIRouter(prefix="/api/v1/debit-notes", tags=["debit-notes"])
 
@@ -206,20 +207,14 @@ async def list_debit_notes(
     current_user: User = Depends(get_current_user),
 ):
     query = select(DebitNote).options(selectinload(DebitNote.lines))
-    count_query = select(func.count(DebitNote.debit_note_id))
 
     if client_id:
         query = query.where(DebitNote.client_id == client_id)
-        count_query = count_query.where(DebitNote.client_id == client_id)
     if status:
         query = query.where(DebitNote.status == status)
-        count_query = count_query.where(DebitNote.status == status)
 
-    total = (await db.execute(count_query)).scalar()
-    result = await db.execute(
-        query.order_by(DebitNote.created_at.desc()).offset(skip).limit(limit)
-    )
-    debit_notes = result.scalars().unique().all()
+    query = query.order_by(DebitNote.created_at.desc())
+    total, debit_notes = await paginate(db, query, skip, limit)
 
     items = []
     for dn in debit_notes:

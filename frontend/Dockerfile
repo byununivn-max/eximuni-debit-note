@@ -3,6 +3,12 @@ FROM node:18-alpine AS build
 
 WORKDIR /app
 
+# 빌드 시 환경변수 주입
+ARG VITE_API_BASE=""
+ARG VITE_AZURE_CLIENT_ID=""
+ARG VITE_AZURE_TENANT_ID=""
+ARG VITE_AZURE_REDIRECT_URI=""
+
 COPY package.json ./
 RUN npm install
 

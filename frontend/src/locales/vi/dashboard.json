@@ -1,0 +1,16 @@
+{
+  "title": "Bảng điều khiển",
+  "sellingTotal": "Tổng doanh thu ({{count}} giao dịch)",
+  "buyingTotal": "Tổng mua hàng ({{count}} giao dịch)",
+  "grossProfit": "Lợi nhuận gộp (GP)",
+  "gpMargin": "Biên GP",
+  "monthlyTrend": "Xu hướng DT/MH/LN hàng tháng {{year}}",
+  "customerTop": "Top 10 khách hàng theo doanh thu",
+  "chartSelling": "Doanh thu",
+  "chartBuying": "Mua hàng",
+  "chartProfit": "Lợi nhuận gộp",
+  "columnRank": "Hạng",
+  "columnCustomer": "Khách hàng",
+  "columnSalesVnd": "Doanh thu (VND)",
+  "columnCount": "Số lượng"
+}

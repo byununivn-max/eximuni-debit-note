@@ -23,19 +23,22 @@ class Role(Base):
 
 
 class User(Base):
-    """사용자 테이블"""
+    """사용자 테이블 — Azure AD SSO 연동 필드 추가"""
     __tablename__ = "users"
 
     user_id = Column(Integer, primary_key=True, autoincrement=True)
     username = Column(String(100), unique=True, nullable=False)
     email = Column(String(200), unique=True, nullable=False)
-    hashed_password = Column(String(255), nullable=False)
+    hashed_password = Column(String(255), nullable=True)  # MSAL 사용 시 NULL 허용
     full_name = Column(String(200), nullable=False)
     role_id = Column(Integer, ForeignKey("roles.role_id"), nullable=False)
     is_active = Column(Boolean, default=True)
     last_login = Column(DateTime)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # --- ERP v2: Azure AD SSO 연동 ---
+    azure_oid = Column(String(100), unique=True, nullable=True, index=True)  # Azure AD Object ID
 
     role = relationship("Role", back_populates="users")
     created_debit_notes = relationship("DebitNote", back_populates="created_by_user", foreign_keys="DebitNote.created_by")
